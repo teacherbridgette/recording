@@ -14,7 +14,7 @@
             --primary: var(--bg-green);
             --secondary: var(--sun-orange);
             --accent: #a48c7e;
-            --neon-blue: #49b6ff; /* Your signature vibrant blue */
+            --neon-blue: #49b6ff; 
         }
 
         body { 
@@ -25,12 +25,14 @@
             color: var(--deep-brown);
         }
 
+        /* WIDGET BAR */
         .widget-bar { position: fixed; top: 15px; right: 15px; display: flex; gap: 12px; z-index: 1000; }
         .widget-btn {
             background: white; border: 3px solid var(--primary); border-radius: 50%;
             width: 50px; height: 50px; cursor: pointer; display: flex;
             align-items: center; justify-content: center; font-size: 1.3rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s;
+            text-decoration: none; color: inherit;
         }
         .widget-btn:hover { box-shadow: 0 0 15px var(--neon-blue); transform: scale(1.1); }
 
@@ -49,18 +51,13 @@
             margin-top: 20px; backdrop-filter: blur(8px);
         }
 
-        /* BUTTONS WITH NEON HOVER */
         .btn { 
             padding: 20px 30px; border: 3px solid transparent; border-radius: 25px; font-size: 1.3rem; 
             font-weight: 600; cursor: pointer; background: var(--primary); color: white; 
             box-shadow: 0 8px 0 #5a7a48; margin: 12px 0; width: 100%; font-variant: small-caps; 
             transition: all 0.2s ease;
         }
-        .btn:hover { 
-            border-color: #fff; 
-            box-shadow: 0 0 20px var(--neon-blue); 
-            transform: scale(1.02); 
-        }
+        .btn:hover { border-color: #fff; box-shadow: 0 0 20px var(--neon-blue); transform: scale(1.02); }
 
         .config-section { background: rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 20px; margin: 15px 0; border: 2px dashed var(--accent); }
         .config-row { display: grid; grid-template-columns: 2fr 1.5fr 100px; gap: 15px; align-items: center; margin-bottom: 12px; }
@@ -72,15 +69,9 @@
             text-align: center; border: 4px solid #eee; cursor: pointer; 
             font-weight: bold; font-size: 1.2rem; transition: 0.3s;
         }
-        /* SEAT NEON HOVER */
-        .seat:hover {
-            box-shadow: 0 0 15px var(--neon-blue);
-            border-color: var(--neon-blue);
-            transform: translateY(-5px);
-        }
+        .seat:hover { box-shadow: 0 0 15px var(--neon-blue); border-color: var(--neon-blue); transform: translateY(-5px); }
         .seat.done { background: #8fb376; color: white; border-color: #8fb376; }
 
-        /* READING MATERIAL FONT */
         #word-display { 
             font-family: 'Comic Sans MS', 'Comic Sans', cursive; 
             font-size: 4.5rem; color: var(--secondary); text-align: center; 
@@ -99,8 +90,10 @@
 <body>
 
     <div class="widget-bar">
-        <button class="widget-btn" onclick="toggleFS()">📺</button>
-        <button class="widget-btn" onclick="clearCache()">🧹</button>
+        <a href="PASTE_YOUR_LINK_HERE" target="_blank" class="widget-btn" title="Open Drive">📁</a>
+        
+        <button class="widget-btn" onclick="toggleFS()" title="Fullscreen">📺</button>
+        <button class="widget-btn" onclick="clearCache()" title="Clear Session">🧹</button>
     </div>
 
     <audio id="snd-hover" src="hover.mp3" preload="auto"></audio>
@@ -176,7 +169,6 @@
     </footer>
 
 <script>
-    // JavaScript logic remains exactly as before to preserve functionality
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2Lkc9e5EqGB_6vU5JWPw4vB2mBp_VQsEsOLrwL2RSj21PWOo9qPEJ4r0L4M0wn6AB/exec";
     const hSnd = document.getElementById('snd-hover');
     const cSnd = document.getElementById('snd-click');
