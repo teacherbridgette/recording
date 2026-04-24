@@ -25,8 +25,6 @@
             color: var(--deep-brown);
         }
 
-        @media (min-width: 1200px) { html { font-size: 20px; } }
-
         .widget-bar { position: fixed; top: 15px; right: 15px; display: flex; gap: 12px; z-index: 1000; }
         .widget-btn {
             background: white; border: 3px solid var(--primary); border-radius: 50%;
@@ -34,7 +32,6 @@
             align-items: center; justify-content: center; font-size: 1.3rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s;
         }
-        .widget-btn:hover { box-shadow: 0 0 15px var(--neon-green); transform: scale(1.1); }
 
         .studio-title { 
             font-size: 3.2rem; color: white; text-shadow: 4px 4px 0 var(--deep-brown); 
@@ -63,15 +60,14 @@
 
         .config-section { background: rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 20px; margin: 15px 0; border: 2px dashed var(--accent); }
         .config-row { display: grid; grid-template-columns: 2fr 1.5fr 100px; gap: 15px; align-items: center; margin-bottom: 12px; }
-        .input-box { padding: 15px; border-radius: 12px; border: 2px solid #ccc; width: 100%; font-family: inherit; font-size: 1.1rem; box-sizing: border-box; }
+        .input-box { padding: 10px; border-radius: 12px; border: 2px solid #ccc; width: 100%; font-family: inherit; font-size: 1rem; box-sizing: border-box; }
 
         .seat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; margin-top: 25px; }
         .seat { 
             background: white; border-radius: 20px; padding: 25px 10px; 
             text-align: center; border: 4px solid #eee; cursor: pointer; 
-            font-weight: bold; font-size: 1.4rem; transition: 0.3s;
+            font-weight: bold; font-size: 1.2rem; transition: 0.3s;
         }
-        .seat:hover { border-color: var(--neon-green); box-shadow: 0 0 20px var(--neon-green); transform: translateY(-5px); }
         .seat.done { background: #8fb376; color: white; border-color: #8fb376; }
 
         #word-display { font-size: 4.5rem; color: var(--secondary); text-align: center; margin: 35px 0; font-variant: small-caps; font-weight: 600; text-shadow: 2px 2px 0 white; }
@@ -80,7 +76,7 @@
         footer {
             margin-top: auto; padding: 20px; text-align: center; width: 100%;
             background: var(--paper-white); border-top: 3px solid var(--primary);
-            font-weight: 600; font-size: 0.9rem; line-height: 1.4;
+            font-weight: 600; font-size: 0.9rem;
         }
     </style>
 </head>
@@ -148,7 +144,7 @@
     <div id="view-recorder" class="screen">
         <div class="card" style="text-align: center;">
             <div id="status-msg" style="font-weight:bold; color:var(--accent);">Ready</div>
-            <h2 id="student-name" style="color: var(--primary);">Student</h2>
+            <h2 id="student-name-display" style="color: var(--primary);">Student</h2>
             <div id="word-display">...</div>
             <div id="rating-display">Score: --/10</div>
             <div style="display:flex; gap:15px;">
@@ -167,16 +163,15 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2Lkc9e5EqGB_6vU5JWPw4vB2mBp_VQsEsOLrwL2RSj21PWOo9qPEJ4r0L4M0wn6AB/exec";
     const hSnd = document.getElementById('snd-hover');
     const cSnd = document.getElementById('snd-click');
-    let studio = { grade: '', pool: [] };
-    let isRec = false, mediaRec, chunks = [], recognition, latestScore = "0/10";
+    let studio = { grade: '', pool: [], classNames: {} };
+    let isRec = false, mediaRec, chunks = [], recognition, latestScore = "0/10", activeStudentName = "";
 
     function playClick() { cSnd.currentTime = 0; cSnd.play(); }
     function playHover() { hSnd.currentTime = 0; hSnd.play(); }
 
     function attachListeners() {
         document.querySelectorAll('.btn, .seat, .widget-btn').forEach(el => {
-            el.onmouseenter = playHover;
-            el.onmousedown = playClick;
+            el.onmouseenter = playHover; el.onmousedown = playClick;
         });
     }
 
@@ -212,20 +207,31 @@
         const area = document.getElementById('class-entry-area'); area.innerHTML = '';
         for(let i=1; i<=num; i++) {
             const cid = `${studio.grade}0${i}`;
-            area.innerHTML += `<div style="background:white; padding:10px; margin-bottom:8px; border-radius:12px; border:1px solid #ddd;">Class ${cid}</div>`;
+            area.innerHTML += `<div style="background:white; padding:10px; margin-bottom:8px; border-radius:12px; border:1px solid #ddd;">
+                <strong>Class ${cid}</strong><br>
+                <input type="file" id="names-${cid}" class="input-box" style="margin-top:5px;" accept=".txt">
+                <small style="display:block; color:#777;">Upload names (.txt)</small>
+            </div>`;
         }
     }
 
     async function startSession() {
         studio.pool = [];
+        studio.classNames = {};
         await loadSet('up-words', 'mode-words', 'qty-words');
         await loadSet('up-sentences', 'mode-sentences', 'qty-sentences');
         await loadSet('up-phonics', 'mode-phonics', 'qty-phonics');
+        
         const num = document.getElementById('num-classes').value;
         const nav = document.getElementById('class-nav'); nav.innerHTML = '';
         for(let i=1; i<=num; i++) {
             const cid = `${studio.grade}0${i}`;
             nav.innerHTML += `<option value="${cid}">Class ${cid}</option>`;
+            const f = document.getElementById('names-'+cid).files[0];
+            if(f) {
+                const text = await f.text();
+                studio.classNames[cid] = text.split('\n').map(n => n.trim()).filter(n => n);
+            }
         }
         renderGrid(); showView('view-grid');
     }
@@ -245,17 +251,21 @@
         const cid = document.getElementById('class-nav').value;
         document.getElementById('display-cid').innerText = "Class " + cid;
         const grid = document.getElementById('main-grid'); grid.innerHTML = '';
+        const names = studio.classNames[cid] || [];
         for(let i=1; i<=30; i++) {
             const s = document.createElement('div');
-            s.className = 'seat'; s.id = 'seat-'+i; s.innerText = i;
-            s.onclick = () => { window.activeS = i; openBooth(i); };
+            const studentName = names[i-1] || "";
+            s.className = 'seat'; s.id = 'seat-'+i;
+            s.innerHTML = `${i}<br><span style="font-size:0.8rem; color:#888;">${studentName}</span>`;
+            s.onclick = () => { window.activeS = i; activeStudentName = studentName; openBooth(i); };
             grid.appendChild(s);
         }
         setTimeout(attachListeners, 100);
     }
 
     function openBooth(n) {
-        document.getElementById('student-name').innerText = "Student " + n;
+        const displayName = activeStudentName ? `${n}. ${activeStudentName}` : `Student ${n}`;
+        document.getElementById('student-name-display').innerText = displayName;
         document.getElementById('word-display').innerText = studio.pool[Math.floor(Math.random()*studio.pool.length)] || "Reading Time!";
         document.getElementById('rating-display').innerText = "Score: --/10";
         showView('view-recorder');
@@ -266,8 +276,8 @@
         recognition.onresult = (e) => {
             const conf = e.results[0][0].confidence;
             const score = Math.min(10, Math.max(1, Math.ceil(conf * 10)));
-            latestScore = score + "/10";
-            document.getElementById('rating-display').innerText = "Score: " + latestScore;
+            latestScore = score; 
+            document.getElementById('rating-display').innerText = "Score: " + latestScore + "/10";
         };
     }
 
@@ -292,9 +302,14 @@
         reader.onloadend = async () => {
             const base64 = reader.result.split(',')[1];
             const cid = document.getElementById('class-nav').value;
+            const safeName = activeStudentName.replace(/[^a-z0-9]/gi, '_');
+            const fname = `${window.activeS.toString().padStart(2, '0')}_${safeName}_${cid}.webm`;
+            
             const params = new URLSearchParams({
-                audio: base64, filename: `S${window.activeS}_${cid}.webm`,
-                className: cid, score: latestScore
+                audio: base64, 
+                filename: fname,
+                className: cid, 
+                score: `${activeStudentName} ${latestScore} (${latestScore}/10) score`
             });
             await fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' });
             document.getElementById('seat-'+window.activeS).classList.add('done');
