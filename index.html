@@ -108,11 +108,20 @@
     <div id="view-config" class="screen">
         <div class="card">
             <h2 style="color: var(--primary)">Studio Setup</h2>
+            
+            <div class="config-section">
+                <h3>Storage Destination</h3>
+                <div class="config-row" style="grid-template-columns: 1fr;">
+                    <input type="text" id="drive-link" class="input-box" placeholder="Paste Google Drive Folder Link Here..." onchange="saveDriveLink()">
+                </div>
+            </div>
+
             <div class="config-section">
                 <h3>Classes</h3>
                 <input type="number" id="num-classes" class="input-box" value="3" onchange="buildClassInputs()">
                 <div id="class-entry-area" style="margin-top:10px;"></div>
             </div>
+
             <div class="config-section">
                 <h3>Materials</h3>
                 <div class="config-row">
@@ -164,8 +173,22 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2Lkc9e5EqGB_6vU5JWPw4vB2mBp_VQsEsOLrwL2RSj21PWOo9qPEJ4r0L4M0wn6AB/exec";
     const hSnd = document.getElementById('snd-hover');
     const cSnd = document.getElementById('snd-click');
-    let studio = { grade: '', pool: [], classNames: {}, settings: {} };
+    let studio = { grade: '', pool: [], classNames: {}, settings: {}, driveLink: '' };
     let isRec = false, mediaRec, chunks = [], recognition, latestScore = 0, activeStudentName = "", currentPromptIndex = 0, currentStudentPrompts = [], sessionScores = [], sessionAudioChunks = [];
+
+    // Load saved drive link on startup
+    window.onload = () => {
+        const savedLink = localStorage.getItem('wynn_drive_link');
+        if(savedLink) {
+            document.getElementById('drive-link').value = savedLink;
+            studio.driveLink = savedLink;
+        }
+    };
+
+    function saveDriveLink() {
+        studio.driveLink = document.getElementById('drive-link').value;
+        localStorage.setItem('wynn_drive_link', studio.driveLink);
+    }
 
     function playClick() { cSnd.currentTime = 0; cSnd.play(); }
     function playHover() { hSnd.currentTime = 0; hSnd.play(); }
@@ -272,7 +295,7 @@
     }
 
     function openBooth() {
-        const displayName = activeStudentName ? `${window.activeS}. ${activeStudentName}` : `Student ${window.activeS}`;
+        const displayName = activeStudentName ? `${window.activeS.prop}. ${activeStudentName}` : `Student ${window.activeS}`;
         document.getElementById('student-name-display').innerText = displayName;
         
         let studentPool = [];
@@ -351,8 +374,10 @@
             const params = new URLSearchParams({
                 audio: base64, 
                 filename: fname,
-                className: cid
+                className: cid,
+                driveLink: studio.driveLink // Added this line to send the link
             });
+            
             await fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' });
             document.getElementById('seat-'+window.activeS).classList.add('done');
             showView('view-grid');
