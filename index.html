@@ -17,9 +17,8 @@
             --neon-green: #a9cc9e;
         }
 
-        /* Base Style: Fredoka */
         body { 
-            font-family: 'Fredoka', sans-serif; 
+            font-family: 'Fredoka', 'Comic Sans MS', sans-serif; 
             background: url('bg.png') no-repeat center center fixed; 
             background-size: cover; margin: 0; display: flex; 
             flex-direction: column; align-items: center; min-height: 100vh;
@@ -34,7 +33,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s;
         }
 
-        /* Headers use Small Caps per preference */
         .studio-title { 
             font-size: 3.2rem; color: white; text-shadow: 4px 4px 0 var(--deep-brown); 
             text-align: center; margin-top: 50px; font-variant: small-caps;
@@ -56,10 +54,14 @@
             box-shadow: 0 8px 0 #5a7a48; margin: 12px 0; width: 100%; font-variant: small-caps; 
             transition: all 0.2s ease;
         }
+        .btn:hover { border-color: #fff; box-shadow: 0 0 20px var(--neon-green); transform: scale(1.02); }
+        .btn-pink { background: var(--secondary); box-shadow: 0 8px 0 #b88661; }
+        .btn-green { background: #8fb376; box-shadow: 0 8px 0 #6d8a57; }
 
         .config-section { background: rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 20px; margin: 15px 0; border: 2px dashed var(--accent); }
         .config-row { display: grid; grid-template-columns: 2fr 1.5fr 100px; gap: 15px; align-items: center; margin-bottom: 12px; }
         .input-box { padding: 10px; border-radius: 12px; border: 2px solid #ccc; width: 100%; font-family: inherit; font-size: 1rem; box-sizing: border-box; }
+        .input-box:disabled { background: #eee; cursor: not-allowed; opacity: 0.5; }
 
         .seat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; margin-top: 25px; }
         .seat { 
@@ -69,18 +71,7 @@
         }
         .seat.done { background: #8fb376; color: white; border-color: #8fb376; }
 
-        /* SPECIFIC FONT FOR READING MATERIALS */
-        #word-display { 
-            font-family: 'Comic Sans MS', 'Comic Sans', cursive; 
-            font-size: 4.5rem; 
-            color: var(--secondary); 
-            text-align: center; 
-            margin: 35px 0; 
-            font-weight: 600; 
-            text-shadow: 2px 2px 0 white;
-            /* Case logic: removed font-variant: small-caps to preserve original case */
-        }
-
+        #word-display { font-size: 4.5rem; color: var(--secondary); text-align: center; margin: 35px 0; font-variant: small-caps; font-weight: 600; text-shadow: 2px 2px 0 white; }
         #rating-display { font-size: 3rem; font-weight: 600; color: var(--deep-brown); margin: 10px 0; }
 
         footer {
@@ -104,7 +95,7 @@
         <h1 class="studio-title">Teacher Wynn's Recording Studio</h1>
         <div class="card">
             <button class="btn" onclick="navGrades('Elementary')">Elementary School</button>
-            <button class="btn" style="background:var(--secondary); box-shadow:0 8px 0 #b88661;" onclick="navGrades('Junior High')">Junior High School</button>
+            <button class="btn btn-pink" onclick="navGrades('Junior High')">Junior High School</button>
         </div>
     </div>
 
@@ -140,7 +131,7 @@
                     <input type="number" id="qty-phonics" class="input-box" placeholder="Qty">
                 </div>
             </div>
-            <button class="btn" style="background:#8fb376; box-shadow:0 8px 0 #6d8a57;" onclick="startSession()">Open Studio 🚀</button>
+            <button class="btn btn-green" onclick="startSession()">Open Studio 🚀</button>
         </div>
     </div>
 
@@ -158,8 +149,8 @@
             <div id="word-display">...</div>
             <div id="rating-display">Score: --/10</div>
             <div style="display:flex; gap:15px;">
-                <button id="mic-btn" class="btn" style="background:#8fb376; box-shadow:0 8px 0 #6d8a57; flex:2" onclick="toggleMic()">🎤 Record</button>
-                <button class="btn" style="background:var(--secondary); box-shadow:0 8px 0 #b88661; flex:1" onclick="showView('view-grid')">Back</button>
+                <button id="mic-btn" class="btn btn-green" style="flex:2" onclick="toggleMic()">🎤 Record</button>
+                <button class="btn btn-pink" style="flex:1" onclick="showView('view-grid')">Back</button>
             </div>
         </div>
     </div>
@@ -239,9 +230,9 @@
             phonics: { mode: document.getElementById('mode-phonics').value, qty: parseInt(document.getElementById('qty-phonics').value) || 0 }
         };
 
-        await loadSet('up-words');
-        await loadSet('up-sentences');
-        await loadSet('up-phonics');
+        await loadSet('up-words', studio.settings.words);
+        await loadSet('up-sentences', studio.settings.sentences);
+        await loadSet('up-phonics', studio.settings.phonics);
         
         const num = document.getElementById('num-classes').value;
         const nav = document.getElementById('class-nav'); nav.innerHTML = '';
@@ -257,11 +248,10 @@
         renderGrid(); showView('view-grid');
     }
 
-    async function loadSet(fId) {
+    async function loadSet(fId, settings) {
         const f = document.getElementById(fId).files[0];
         if(!f) return;
-        // Case logic: we filter and map without changing case
-        let lines = (await f.text()).split('\n').map(l => l.trim()).filter(l => l);
+        let lines = (await f.text()).split('\n').filter(l => l.trim());
         studio.pool.push(...lines);
     }
 
@@ -327,9 +317,9 @@
             mediaRec = new MediaRecorder(stream);
             chunks = []; mediaRec.ondataavailable = e => chunks.push(e.data);
             mediaRec.onstop = handleItemEnd; mediaRec.start(); recognition.start();
-            isRec = true; btn.innerText = "🛑 Stop"; btn.style.background = "var(--secondary)";
+            isRec = true; btn.innerText = "🛑 Stop"; btn.className = "btn btn-pink";
         } else {
-            mediaRec.stop(); isRec = false; btn.innerText = "🎤 Record"; btn.style.background = "#8fb376";
+            mediaRec.stop(); isRec = false; btn.innerText = "🎤 Record"; btn.className = "btn btn-green";
         }
     }
 
@@ -340,7 +330,7 @@
         if (currentPromptIndex < currentStudentPrompts.length - 1) {
             currentPromptIndex++;
             updatePromptDisplay();
-            document.getElementById('status-msg').innerText = "Saved! Next item...";
+            document.getElementById('status-msg').innerText = "Saved! Get ready for next item...";
         } else {
             await uploadFinalSession();
         }
