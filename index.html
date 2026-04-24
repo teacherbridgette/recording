@@ -14,9 +14,10 @@
             --primary: var(--bg-green);
             --secondary: var(--sun-orange);
             --accent: #a48c7e;
-            --neon-blue: #49b6ff; 
+            --neon-green: #a9cc9e;
         }
 
+        /* Base Style: Fredoka */
         body { 
             font-family: 'Fredoka', sans-serif; 
             background: url('bg.png') no-repeat center center fixed; 
@@ -25,17 +26,15 @@
             color: var(--deep-brown);
         }
 
-        /* WIDGET BAR */
         .widget-bar { position: fixed; top: 15px; right: 15px; display: flex; gap: 12px; z-index: 1000; }
         .widget-btn {
             background: white; border: 3px solid var(--primary); border-radius: 50%;
             width: 50px; height: 50px; cursor: pointer; display: flex;
             align-items: center; justify-content: center; font-size: 1.3rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s;
-            text-decoration: none; color: inherit;
         }
-        .widget-btn:hover { box-shadow: 0 0 15px var(--neon-blue); transform: scale(1.1); }
 
+        /* Headers use Small Caps per preference */
         .studio-title { 
             font-size: 3.2rem; color: white; text-shadow: 4px 4px 0 var(--deep-brown); 
             text-align: center; margin-top: 50px; font-variant: small-caps;
@@ -57,7 +56,6 @@
             box-shadow: 0 8px 0 #5a7a48; margin: 12px 0; width: 100%; font-variant: small-caps; 
             transition: all 0.2s ease;
         }
-        .btn:hover { border-color: #fff; box-shadow: 0 0 20px var(--neon-blue); transform: scale(1.02); }
 
         .config-section { background: rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 20px; margin: 15px 0; border: 2px dashed var(--accent); }
         .config-row { display: grid; grid-template-columns: 2fr 1.5fr 100px; gap: 15px; align-items: center; margin-bottom: 12px; }
@@ -69,13 +67,18 @@
             text-align: center; border: 4px solid #eee; cursor: pointer; 
             font-weight: bold; font-size: 1.2rem; transition: 0.3s;
         }
-        .seat:hover { box-shadow: 0 0 15px var(--neon-blue); border-color: var(--neon-blue); transform: translateY(-5px); }
         .seat.done { background: #8fb376; color: white; border-color: #8fb376; }
 
+        /* SPECIFIC FONT FOR READING MATERIALS */
         #word-display { 
             font-family: 'Comic Sans MS', 'Comic Sans', cursive; 
-            font-size: 4.5rem; color: var(--secondary); text-align: center; 
-            margin: 35px 0; font-weight: 600; text-shadow: 2px 2px 0 white;
+            font-size: 4.5rem; 
+            color: var(--secondary); 
+            text-align: center; 
+            margin: 35px 0; 
+            font-weight: 600; 
+            text-shadow: 2px 2px 0 white;
+            /* Case logic: removed font-variant: small-caps to preserve original case */
         }
 
         #rating-display { font-size: 3rem; font-weight: 600; color: var(--deep-brown); margin: 10px 0; }
@@ -90,10 +93,8 @@
 <body>
 
     <div class="widget-bar">
-        <a href="PASTE_YOUR_LINK_HERE" target="_blank" class="widget-btn" title="Open Drive">📁</a>
-        
-        <button class="widget-btn" onclick="toggleFS()" title="Fullscreen">📺</button>
-        <button class="widget-btn" onclick="clearCache()" title="Clear Session">🧹</button>
+        <button class="widget-btn" onclick="toggleFS()">📺</button>
+        <button class="widget-btn" onclick="clearCache()">🧹</button>
     </div>
 
     <audio id="snd-hover" src="hover.mp3" preload="auto"></audio>
@@ -259,6 +260,7 @@
     async function loadSet(fId) {
         const f = document.getElementById(fId).files[0];
         if(!f) return;
+        // Case logic: we filter and map without changing case
         let lines = (await f.text()).split('\n').map(l => l.trim()).filter(l => l);
         studio.pool.push(...lines);
     }
