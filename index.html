@@ -61,6 +61,7 @@
         .config-section { background: rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 20px; margin: 15px 0; border: 2px dashed var(--accent); }
         .config-row { display: grid; grid-template-columns: 2fr 1.5fr 100px; gap: 15px; align-items: center; margin-bottom: 12px; }
         .input-box { padding: 10px; border-radius: 12px; border: 2px solid #ccc; width: 100%; font-family: inherit; font-size: 1rem; box-sizing: border-box; }
+        .input-box:disabled { background: #eee; cursor: not-allowed; opacity: 0.5; }
 
         .seat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; margin-top: 25px; }
         .seat { 
@@ -116,17 +117,17 @@
                 <h3>Materials</h3>
                 <div class="config-row">
                     <div><strong>Words:</strong><br><input type="file" id="up-words"></div>
-                    <select id="mode-words" class="input-box"><option value="rnd">Random</option><option value="all">All</option></select>
+                    <select id="mode-words" class="input-box" onchange="toggleQty('mode-words', 'qty-words')"><option value="rnd">Random</option><option value="all">All</option></select>
                     <input type="number" id="qty-words" class="input-box" placeholder="Qty">
                 </div>
                 <div class="config-row">
                     <div><strong>Sentences:</strong><br><input type="file" id="up-sentences"></div>
-                    <select id="mode-sentences" class="input-box"><option value="rnd">Random</option><option value="all">All</option></select>
+                    <select id="mode-sentences" class="input-box" onchange="toggleQty('mode-sentences', 'qty-sentences')"><option value="rnd">Random</option><option value="all">All</option></select>
                     <input type="number" id="qty-sentences" class="input-box" placeholder="Qty">
                 </div>
                 <div class="config-row">
                     <div><strong>Phonics:</strong><br><input type="file" id="up-phonics"></div>
-                    <select id="mode-phonics" class="input-box"><option value="rnd">Random</option><option value="all">All</option></select>
+                    <select id="mode-phonics" class="input-box" onchange="toggleQty('mode-phonics', 'qty-phonics')"><option value="rnd">Random</option><option value="all">All</option></select>
                     <input type="number" id="qty-phonics" class="input-box" placeholder="Qty">
                 </div>
             </div>
@@ -163,11 +164,18 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2Lkc9e5EqGB_6vU5JWPw4vB2mBp_VQsEsOLrwL2RSj21PWOo9qPEJ4r0L4M0wn6AB/exec";
     const hSnd = document.getElementById('snd-hover');
     const cSnd = document.getElementById('snd-click');
-    let studio = { grade: '', pool: [], classNames: {} };
-    let isRec = false, mediaRec, chunks = [], recognition, latestScore = "0/10", activeStudentName = "";
+    let studio = { grade: '', pool: [], classNames: {}, settings: {} };
+    let isRec = false, mediaRec, chunks = [], recognition, latestScore = "0/10", activeStudentName = "", currentPromptIndex = 0, currentStudentPrompts = [];
 
     function playClick() { cSnd.currentTime = 0; cSnd.play(); }
     function playHover() { hSnd.currentTime = 0; hSnd.play(); }
+
+    function toggleQty(selectId, qtyId) {
+        const sel = document.getElementById(selectId);
+        const qty = document.getElementById(qtyId);
+        qty.disabled = (sel.value === 'all');
+        if(qty.disabled) qty.value = '';
+    }
 
     function attachListeners() {
         document.querySelectorAll('.btn, .seat, .widget-btn').forEach(el => {
@@ -210,17 +218,21 @@
             area.innerHTML += `<div style="background:white; padding:10px; margin-bottom:8px; border-radius:12px; border:1px solid #ddd;">
                 <strong>Class ${cid}</strong><br>
                 <input type="file" id="names-${cid}" class="input-box" style="margin-top:5px;" accept=".txt">
-                <small style="display:block; color:#777;">Upload names (.txt)</small>
             </div>`;
         }
     }
 
     async function startSession() {
-        studio.pool = [];
-        studio.classNames = {};
-        await loadSet('up-words', 'mode-words', 'qty-words');
-        await loadSet('up-sentences', 'mode-sentences', 'qty-sentences');
-        await loadSet('up-phonics', 'mode-phonics', 'qty-phonics');
+        studio.pool = []; studio.classNames = {};
+        studio.settings = {
+            words: { mode: document.getElementById('mode-words').value, qty: parseInt(document.getElementById('qty-words').value) || 0 },
+            sentences: { mode: document.getElementById('mode-sentences').value, qty: parseInt(document.getElementById('qty-sentences').value) || 0 },
+            phonics: { mode: document.getElementById('mode-phonics').value, qty: parseInt(document.getElementById('qty-phonics').value) || 0 }
+        };
+
+        await loadSet('up-words', studio.settings.words);
+        await loadSet('up-sentences', studio.settings.sentences);
+        await loadSet('up-phonics', studio.settings.phonics);
         
         const num = document.getElementById('num-classes').value;
         const nav = document.getElementById('class-nav'); nav.innerHTML = '';
@@ -236,14 +248,11 @@
         renderGrid(); showView('view-grid');
     }
 
-    async function loadSet(fId, mId, qId) {
+    async function loadSet(fId, settings) {
         const f = document.getElementById(fId).files[0];
         if(!f) return;
         let lines = (await f.text()).split('\n').filter(l => l.trim());
-        if(document.getElementById(mId).value === 'rnd') {
-            const qty = document.getElementById(qId).value || lines.length;
-            lines = lines.sort(() => 0.5 - Math.random()).slice(0, qty);
-        }
+        // For the main pool, we store the whole set if "all", or use logic to handle random later
         studio.pool.push(...lines);
     }
 
@@ -257,18 +266,43 @@
             const studentName = names[i-1] || "";
             s.className = 'seat'; s.id = 'seat-'+i;
             s.innerHTML = `${i}<br><span style="font-size:0.8rem; color:#888;">${studentName}</span>`;
-            s.onclick = () => { window.activeS = i; activeStudentName = studentName; openBooth(i); };
+            s.onclick = () => { window.activeS = i; activeStudentName = studentName; openBooth(); };
             grid.appendChild(s);
         }
         setTimeout(attachListeners, 100);
     }
 
-    function openBooth(n) {
-        const displayName = activeStudentName ? `${n}. ${activeStudentName}` : `Student ${n}`;
+    function openBooth() {
+        const displayName = activeStudentName ? `${window.activeS}. ${activeStudentName}` : `Student ${window.activeS}`;
         document.getElementById('student-name-display').innerText = displayName;
-        document.getElementById('word-display').innerText = studio.pool[Math.floor(Math.random()*studio.pool.length)] || "Reading Time!";
+        
+        // Calculate total items for this student
+        let studentPool = [];
+        // Logic: if random X, pick X from the pool. If all, take all.
+        // For simplicity, we currently pool everything together. To fix per-student random:
+        const totalRandom = (studio.settings.words.qty || 0) + (studio.settings.sentences.qty || 0) + (studio.settings.phonics.qty || 0);
+        
+        if (totalRandom > 0) {
+            studentPool = [...studio.pool].sort(() => 0.5 - Math.random()).slice(0, totalRandom);
+        } else {
+            studentPool = [...studio.pool];
+        }
+
+        currentStudentPrompts = studentPool;
+        currentPromptIndex = 0;
+        updatePromptDisplay();
         document.getElementById('rating-display').innerText = "Score: --/10";
         showView('view-recorder');
+    }
+
+    function updatePromptDisplay() {
+        const display = document.getElementById('word-display');
+        if (currentStudentPrompts.length > 0) {
+            display.innerText = currentStudentPrompts[currentPromptIndex];
+            document.getElementById('status-msg').innerText = `Item ${currentPromptIndex + 1} of ${currentStudentPrompts.length}`;
+        } else {
+            display.innerText = "No Materials Uploaded";
+        }
     }
 
     if ('webkitSpeechRecognition' in window) {
@@ -312,8 +346,16 @@
                 score: `${activeStudentName} ${latestScore} (${latestScore}/10) score`
             });
             await fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' });
-            document.getElementById('seat-'+window.activeS).classList.add('done');
-            showView('view-grid');
+            
+            // Check if there are more prompts for this student
+            if (currentPromptIndex < currentStudentPrompts.length - 1) {
+                currentPromptIndex++;
+                updatePromptDisplay();
+                document.getElementById('status-msg').innerText = "Saved! Next prompt ready...";
+            } else {
+                document.getElementById('seat-'+window.activeS).classList.add('done');
+                showView('view-grid');
+            }
         };
     }
     attachListeners();
