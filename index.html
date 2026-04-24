@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Wynn's English Recording Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --bg-green: #7a9e60;
+            --sun-orange: #e2a87a;
+            --deep-brown: #665040;
+            --paper-white: rgba(252, 251, 242, 0.96);
+            --primary: var(--bg-green);
+            --secondary: var(--sun-orange);
+            --accent: #a48c7e;
+            --neon-green: #a9cc9e;
+        }
+
+        body { 
+            font-family: 'Fredoka', 'Comic Sans MS', sans-serif; 
+            background: url('bg.png') no-repeat center center fixed; 
+            background-size: cover; margin: 0; display: flex; 
+            flex-direction: column; align-items: center; min-height: 100vh;
+            color: var(--deep-brown);
+        }
+
+        @media (min-width: 1200px) { html { font-size: 20px; } }
+
+        .widget-bar { position: fixed; top: 15px; right: 15px; display: flex; gap: 12px; z-index: 1000; }
+        .widget-btn {
+            background: white; border: 3px solid var(--primary); border-radius: 50%;
+            width: 50px; height: 50px; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; font-size: 1.3rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s;
+        }
+        .widget-btn:hover { box-shadow: 0 0 15px var(--neon-green); transform: scale(1.1); }
+
+        .studio-title { 
+            font-size: 3.2rem; color: white; text-shadow: 4px 4px 0 var(--deep-brown); 
+            text-align: center; margin-top: 50px; font-variant: small-caps;
+        }
+
+        .screen { display: none; width: 95%; max-width: 900px; padding: 20px; box-sizing: border-box; animation: fadeIn 0.4s ease; }
+        .active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+        .card { 
+            background: var(--paper-white); border-radius: 45px; padding: 35px; 
+            border: 5px solid var(--accent); box-shadow: 0 20px 45px rgba(0,0,0,0.1);
+            margin-top: 20px; backdrop-filter: blur(8px);
+        }
+
+        .btn { 
+            padding: 20px 30px; border: 3px solid transparent; border-radius: 25px; font-size: 1.3rem; 
+            font-weight: 600; cursor: pointer; background: var(--primary); color: white; 
+            box-shadow: 0 8px 0 #5a7a48; margin: 12px 0; width: 100%; font-variant: small-caps; 
+            transition: all 0.2s ease;
+        }
+        .btn:hover { border-color: #fff; box-shadow: 0 0 20px var(--neon-green); transform: scale(1.02); }
+        .btn-pink { background: var(--secondary); box-shadow: 0 8px 0 #b88661; }
+        .btn-green { background: #8fb376; box-shadow: 0 8px 0 #6d8a57; }
+
+        .config-section { background: rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 20px; margin: 15px 0; border: 2px dashed var(--accent); }
+        .config-row { display: grid; grid-template-columns: 2fr 1.5fr 100px; gap: 15px; align-items: center; margin-bottom: 12px; }
+        .input-box { padding: 15px; border-radius: 12px; border: 2px solid #ccc; width: 100%; font-family: inherit; font-size: 1.1rem; box-sizing: border-box; }
+
+        .seat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; margin-top: 25px; }
+        .seat { 
+            background: white; border-radius: 20px; padding: 25px 10px; 
+            text-align: center; border: 4px solid #eee; cursor: pointer; 
+            font-weight: bold; font-size: 1.4rem; transition: 0.3s;
+        }
+        .seat:hover { border-color: var(--neon-green); box-shadow: 0 0 20px var(--neon-green); transform: translateY(-5px); }
+        .seat.done { background: #8fb376; color: white; border-color: #8fb376; }
+
+        #word-display { font-size: 4.5rem; color: var(--secondary); text-align: center; margin: 35px 0; font-variant: small-caps; font-weight: 600; text-shadow: 2px 2px 0 white; }
+        #rating-display { font-size: 3rem; font-weight: 600; color: var(--deep-brown); margin: 10px 0; }
+
+        footer {
+            margin-top: auto; padding: 20px; text-align: center; width: 100%;
+            background: var(--paper-white); border-top: 3px solid var(--primary);
+            font-weight: 600; font-size: 0.9rem; line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="widget-bar">
+        <button class="widget-btn" onclick="toggleFS()">📺</button>
+        <button class="widget-btn" onclick="clearCache()">🧹</button>
+    </div>
+
+    <audio id="snd-hover" src="hover.mp3" preload="auto"></audio>
+    <audio id="snd-click" src="click.mp3" preload="auto"></audio>
+
+    <div id="view-start" class="screen active">
+        <h1 class="studio-title">Teacher Wynn's Recording Studio</h1>
+        <div class="card">
+            <button class="btn" onclick="navGrades('Elementary')">Elementary School</button>
+            <button class="btn btn-pink" onclick="navGrades('Junior High')">Junior High School</button>
+        </div>
+    </div>
+
+    <div id="view-grades" class="screen">
+        <h2 style="text-align:center;">Select Grade</h2>
+        <div id="grade-btns" class="card" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px;"></div>
+        <button class="btn" style="background:#888; box-shadow:0 8px 0 #555" onclick="showView('view-start')">Back</button>
+    </div>
+
+    <div id="view-config" class="screen">
+        <div class="card">
+            <h2 style="color: var(--primary)">Studio Setup</h2>
+            <div class="config-section">
+                <h3>Classes</h3>
+                <input type="number" id="num-classes" class="input-box" value="3" onchange="buildClassInputs()">
+                <div id="class-entry-area" style="margin-top:10px;"></div>
+            </div>
+            <div class="config-section">
+                <h3>Materials</h3>
+                <div class="config-row">
+                    <div><strong>Words:</strong><br><input type="file" id="up-words"></div>
+                    <select id="mode-words" class="input-box"><option value="rnd">Random</option><option value="all">All</option></select>
+                    <input type="number" id="qty-words" class="input-box" placeholder="Qty">
+                </div>
+                <div class="config-row">
+                    <div><strong>Sentences:</strong><br><input type="file" id="up-sentences"></div>
+                    <select id="mode-sentences" class="input-box"><option value="rnd">Random</option><option value="all">All</option></select>
+                    <input type="number" id="qty-sentences" class="input-box" placeholder="Qty">
+                </div>
+                <div class="config-row">
+                    <div><strong>Phonics:</strong><br><input type="file" id="up-phonics"></div>
+                    <select id="mode-phonics" class="input-box"><option value="rnd">Random</option><option value="all">All</option></select>
+                    <input type="number" id="qty-phonics" class="input-box" placeholder="Qty">
+                </div>
+            </div>
+            <button class="btn btn-green" onclick="startSession()">Open Studio 🚀</button>
+        </div>
+    </div>
+
+    <div id="view-grid" class="screen">
+        <h2 id="display-cid" style="font-size: 2.5rem; color:var(--primary); text-shadow: 2px 2px 0 white;">Class</h2>
+        <select id="class-nav" class="input-box" style="width: auto; min-width: 180px;" onchange="renderGrid()"></select>
+        <div id="main-grid" class="seat-grid"></div>
+        <button class="btn" style="background:#888; box-shadow:0 8px 0 #555; margin-top:30px;" onclick="showView('view-config')">Settings</button>
+    </div>
+
+    <div id="view-recorder" class="screen">
+        <div class="card" style="text-align: center;">
+            <div id="status-msg" style="font-weight:bold; color:var(--accent);">Ready</div>
+            <h2 id="student-name" style="color: var(--primary);">Student</h2>
+            <div id="word-display">...</div>
+            <div id="rating-display">Score: --/10</div>
+            <div style="display:flex; gap:15px;">
+                <button id="mic-btn" class="btn btn-green" style="flex:2" onclick="toggleMic()">🎤 Record</button>
+                <button class="btn btn-pink" style="flex:1" onclick="showView('view-grid')">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Teacher Wynn is a Filipina English teacher working under the<br>
+        Taiwan Foreign English Teacher Program (TFETP).
+    </footer>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2Lkc9e5EqGB_6vU5JWPw4vB2mBp_VQsEsOLrwL2RSj21PWOo9qPEJ4r0L4M0wn6AB/exec";
+    const hSnd = document.getElementById('snd-hover');
+    const cSnd = document.getElementById('snd-click');
+    let studio = { grade: '', pool: [] };
+    let isRec = false, mediaRec, chunks = [], recognition, latestScore = "0/10";
+
+    function playClick() { cSnd.currentTime = 0; cSnd.play(); }
+    function playHover() { hSnd.currentTime = 0; hSnd.play(); }
+
+    function attachListeners() {
+        document.querySelectorAll('.btn, .seat, .widget-btn').forEach(el => {
+            el.onmouseenter = playHover;
+            el.onmousedown = playClick;
+        });
+    }
+
+    function showView(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        setTimeout(attachListeners, 100);
+    }
+
+    function toggleFS() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    }
+
+    function clearCache() { if(confirm("Clear session?")) { localStorage.clear(); location.reload(); } }
+
+    function navGrades(type) {
+        const container = document.getElementById('grade-btns'); container.innerHTML = '';
+        const grades = type === 'Elementary' ? [1,2,3,4,5,6] : [7,8,9];
+        grades.forEach(g => {
+            const b = document.createElement('button');
+            b.className = 'btn'; b.innerText = 'Grade ' + g;
+            b.onclick = () => { studio.grade = g; buildConfig(); };
+            container.appendChild(b);
+        });
+        showView('view-grades');
+    }
+
+    function buildConfig() { buildClassInputs(); showView('view-config'); }
+
+    function buildClassInputs() {
+        const num = document.getElementById('num-classes').value;
+        const area = document.getElementById('class-entry-area'); area.innerHTML = '';
+        for(let i=1; i<=num; i++) {
+            const cid = `${studio.grade}0${i}`;
+            area.innerHTML += `<div style="background:white; padding:10px; margin-bottom:8px; border-radius:12px; border:1px solid #ddd;">Class ${cid}</div>`;
+        }
+    }
+
+    async function startSession() {
+        studio.pool = [];
+        await loadSet('up-words', 'mode-words', 'qty-words');
+        await loadSet('up-sentences', 'mode-sentences', 'qty-sentences');
+        await loadSet('up-phonics', 'mode-phonics', 'qty-phonics');
+        const num = document.getElementById('num-classes').value;
+        const nav = document.getElementById('class-nav'); nav.innerHTML = '';
+        for(let i=1; i<=num; i++) {
+            const cid = `${studio.grade}0${i}`;
+            nav.innerHTML += `<option value="${cid}">Class ${cid}</option>`;
+        }
+        renderGrid(); showView('view-grid');
+    }
+
+    async function loadSet(fId, mId, qId) {
+        const f = document.getElementById(fId).files[0];
+        if(!f) return;
+        let lines = (await f.text()).split('\n').filter(l => l.trim());
+        if(document.getElementById(mId).value === 'rnd') {
+            const qty = document.getElementById(qId).value || lines.length;
+            lines = lines.sort(() => 0.5 - Math.random()).slice(0, qty);
+        }
+        studio.pool.push(...lines);
+    }
+
+    function renderGrid() {
+        const cid = document.getElementById('class-nav').value;
+        document.getElementById('display-cid').innerText = "Class " + cid;
+        const grid = document.getElementById('main-grid'); grid.innerHTML = '';
+        for(let i=1; i<=30; i++) {
+            const s = document.createElement('div');
+            s.className = 'seat'; s.id = 'seat-'+i; s.innerText = i;
+            s.onclick = () => { window.activeS = i; openBooth(i); };
+            grid.appendChild(s);
+        }
+        setTimeout(attachListeners, 100);
+    }
+
+    function openBooth(n) {
+        document.getElementById('student-name').innerText = "Student " + n;
+        document.getElementById('word-display').innerText = studio.pool[Math.floor(Math.random()*studio.pool.length)] || "Reading Time!";
+        document.getElementById('rating-display').innerText = "Score: --/10";
+        showView('view-recorder');
+    }
+
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.onresult = (e) => {
+            const conf = e.results[0][0].confidence;
+            const score = Math.min(10, Math.max(1, Math.ceil(conf * 10)));
+            latestScore = score + "/10";
+            document.getElementById('rating-display').innerText = "Score: " + latestScore;
+        };
+    }
+
+    async function toggleMic() {
+        const btn = document.getElementById('mic-btn');
+        if(!isRec) {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRec = new MediaRecorder(stream);
+            chunks = []; mediaRec.ondataavailable = e => chunks.push(e.data);
+            mediaRec.onstop = upload; mediaRec.start(); recognition.start();
+            isRec = true; btn.innerText = "🛑 Stop"; btn.className = "btn btn-pink";
+        } else {
+            mediaRec.stop(); isRec = false; btn.innerText = "🎤 Record"; btn.className = "btn btn-green";
+        }
+    }
+
+    async function upload() {
+        document.getElementById('status-msg').innerText = "Saving to Drive...";
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = async () => {
+            const base64 = reader.result.split(',')[1];
+            const cid = document.getElementById('class-nav').value;
+            const params = new URLSearchParams({
+                audio: base64, filename: `S${window.activeS}_${cid}.webm`,
+                className: cid, score: latestScore
+            });
+            await fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' });
+            document.getElementById('seat-'+window.activeS).classList.add('done');
+            showView('view-grid');
+        };
+    }
+    attachListeners();
+</script>
+</body>
+</html>
