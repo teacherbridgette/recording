@@ -165,7 +165,7 @@
     const hSnd = document.getElementById('snd-hover');
     const cSnd = document.getElementById('snd-click');
     let studio = { grade: '', pool: [], classNames: {}, settings: {} };
-    let isRec = false, mediaRec, chunks = [], recognition, latestScore = "0/10", activeStudentName = "", currentPromptIndex = 0, currentStudentPrompts = [];
+    let isRec = false, mediaRec, chunks = [], recognition, latestScore = 0, activeStudentName = "", currentPromptIndex = 0, currentStudentPrompts = [], sessionScores = [], sessionAudioChunks = [];
 
     function playClick() { cSnd.currentTime = 0; cSnd.play(); }
     function playHover() { hSnd.currentTime = 0; hSnd.play(); }
@@ -252,7 +252,6 @@
         const f = document.getElementById(fId).files[0];
         if(!f) return;
         let lines = (await f.text()).split('\n').filter(l => l.trim());
-        // For the main pool, we store the whole set if "all", or use logic to handle random later
         studio.pool.push(...lines);
     }
 
@@ -276,10 +275,7 @@
         const displayName = activeStudentName ? `${window.activeS}. ${activeStudentName}` : `Student ${window.activeS}`;
         document.getElementById('student-name-display').innerText = displayName;
         
-        // Calculate total items for this student
         let studentPool = [];
-        // Logic: if random X, pick X from the pool. If all, take all.
-        // For simplicity, we currently pool everything together. To fix per-student random:
         const totalRandom = (studio.settings.words.qty || 0) + (studio.settings.sentences.qty || 0) + (studio.settings.phonics.qty || 0);
         
         if (totalRandom > 0) {
@@ -290,6 +286,8 @@
 
         currentStudentPrompts = studentPool;
         currentPromptIndex = 0;
+        sessionScores = [];
+        sessionAudioChunks = [];
         updatePromptDisplay();
         document.getElementById('rating-display').innerText = "Score: --/10";
         showView('view-recorder');
@@ -300,8 +298,6 @@
         if (currentStudentPrompts.length > 0) {
             display.innerText = currentStudentPrompts[currentPromptIndex];
             document.getElementById('status-msg').innerText = `Item ${currentPromptIndex + 1} of ${currentStudentPrompts.length}`;
-        } else {
-            display.innerText = "No Materials Uploaded";
         }
     }
 
@@ -309,8 +305,7 @@
         recognition = new webkitSpeechRecognition();
         recognition.onresult = (e) => {
             const conf = e.results[0][0].confidence;
-            const score = Math.min(10, Math.max(1, Math.ceil(conf * 10)));
-            latestScore = score; 
+            latestScore = Math.min(10, Math.max(1, Math.ceil(conf * 10)));
             document.getElementById('rating-display').innerText = "Score: " + latestScore + "/10";
         };
     }
@@ -321,41 +316,46 @@
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRec = new MediaRecorder(stream);
             chunks = []; mediaRec.ondataavailable = e => chunks.push(e.data);
-            mediaRec.onstop = upload; mediaRec.start(); recognition.start();
+            mediaRec.onstop = handleItemEnd; mediaRec.start(); recognition.start();
             isRec = true; btn.innerText = "🛑 Stop"; btn.className = "btn btn-pink";
         } else {
             mediaRec.stop(); isRec = false; btn.innerText = "🎤 Record"; btn.className = "btn btn-green";
         }
     }
 
-    async function upload() {
-        document.getElementById('status-msg').innerText = "Saving to Drive...";
-        const blob = new Blob(chunks, { type: 'audio/webm' });
+    async function handleItemEnd() {
+        sessionScores.push(latestScore);
+        sessionAudioChunks.push(...chunks);
+        
+        if (currentPromptIndex < currentStudentPrompts.length - 1) {
+            currentPromptIndex++;
+            updatePromptDisplay();
+            document.getElementById('status-msg').innerText = "Saved! Get ready for next item...";
+        } else {
+            await uploadFinalSession();
+        }
+    }
+
+    async function uploadFinalSession() {
+        document.getElementById('status-msg').innerText = "Sending final file to Drive...";
+        const blob = new Blob(sessionAudioChunks, { type: 'audio/webm' });
         const reader = new FileReader();
         reader.readAsDataURL(blob);
         reader.onloadend = async () => {
             const base64 = reader.result.split(',')[1];
             const cid = document.getElementById('class-nav').value;
-            const safeName = activeStudentName.replace(/[^a-z0-9]/gi, '_');
-            const fname = `${window.activeS.toString().padStart(2, '0')}_${safeName}_${cid}.webm`;
+            const safeName = activeStudentName.replace(/[^a-z0-9]/gi, '_') || "Student";
+            const scoreString = sessionScores.join('-');
+            const fname = `${window.activeS.toString().padStart(2, '0')}_${safeName}_${scoreString}.webm`;
             
             const params = new URLSearchParams({
                 audio: base64, 
                 filename: fname,
-                className: cid, 
-                score: `${activeStudentName} ${latestScore} (${latestScore}/10) score`
+                className: cid
             });
             await fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' });
-            
-            // Check if there are more prompts for this student
-            if (currentPromptIndex < currentStudentPrompts.length - 1) {
-                currentPromptIndex++;
-                updatePromptDisplay();
-                document.getElementById('status-msg').innerText = "Saved! Next prompt ready...";
-            } else {
-                document.getElementById('seat-'+window.activeS).classList.add('done');
-                showView('view-grid');
-            }
+            document.getElementById('seat-'+window.activeS).classList.add('done');
+            showView('view-grid');
         };
     }
     attachListeners();
