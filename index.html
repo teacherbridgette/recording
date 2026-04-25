@@ -115,7 +115,7 @@
         <h2 style="color:var(--p);">Grade <span id="confG"></span> Configuration</h2>
         
         <div style="text-align:left; margin-bottom:15px;">
-            <label>Google Drive Folder ID/Link</label>
+            <label>Google Drive Folder Link</label>
             <input type="text" id="driveLink" class="input-f" placeholder="Paste link...">
         </div>
 
@@ -136,17 +136,17 @@
             <div>
                 <label><b>Words</b> File</label>
                 <input type="file" id="fWords" class="input-f" accept=".xlsx,.xls">
-                <input type="number" id="nWords" class="input-f" placeholder="Qty (0=all)" style="margin-top:5px;">
+                <input type="number" id="nWords" class="input-f" placeholder="Qty" style="margin-top:5px;">
             </div>
             <div>
                 <label><b>Sentences</b> File</label>
                 <input type="file" id="fSents" class="input-f" accept=".xlsx,.xls">
-                <input type="number" id="nSents" class="input-f" placeholder="Qty (0=all)" style="margin-top:5px;">
+                <input type="number" id="nSents" class="input-f" placeholder="Qty" style="margin-top:5px;">
             </div>
             <div>
                 <label><b>Phonics</b> File</label>
                 <input type="file" id="fPhonics" class="input-f" accept=".xlsx,.xls">
-                <input type="number" id="nPhonics" class="input-f" placeholder="Qty (0=all)" style="margin-top:5px;">
+                <input type="number" id="nPhonics" class="input-f" placeholder="Qty" style="margin-top:5px;">
             </div>
         </div>
 
@@ -177,7 +177,8 @@
 </div>
 
 <script>
-    const webAppURL = 'https://script.google.com/macros/s/AKfycbwwq6P2mA46zGXVobJmcnpNRkFRzHRcyAhqY9aowwdjoQHkfMop203cHHt0Dzlq1U43/exec';
+    const webAppURL = 'https://script.google.com/macros/s/AKfycbyIZVvh4PbcfTvkpSxiglsuLlSrF2Xfpz_hayKH6ebT2yAkkxf8ADkiOdhM3O-o04RZgA/exec';
+    
     let activeG, recorder, chunks = [], curSeat, curEl, stream;
     let namesData = {}, categoryData = { words: [], sents: [], phonics: [] };
     let sessionPlaylist = [], currentWordIdx = 0;
@@ -189,10 +190,8 @@
         document.getElementById('lobby').style.display = 'grid';
         const container = document.getElementById('gradeContainer');
         container.innerHTML = '';
-        
         const grades = type === 'elem' ? [1,2,3,4,5,6] : [7,8,9];
         document.getElementById('lobbyTitle').innerText = type === 'elem' ? "Elementary School" : "Junior High School";
-
         grades.forEach(g => {
             const div = document.createElement('div');
             div.className = 'grade-pill';
@@ -204,13 +203,17 @@
 
     function goBack(targetId) {
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
-        document.getElementById(targetId).style.display = targetId === 'lobby' ? 'grid' : 'flex';
+        const view = document.getElementById(targetId);
+        view.style.display = (targetId === 'lobby' || targetId === 'main') ? 'grid' : 'flex';
+        if(targetId === 'main') view.style.display = 'flex'; // Handle layout for main view
     }
 
     function promptConfig(g) {
         activeG = g;
         document.getElementById('confG').innerText = g;
         document.getElementById('configModal').style.display = 'flex';
+        const savedDrive = localStorage.getItem('wynn_drive');
+        if(savedDrive) document.getElementById('driveLink').value = savedDrive;
     }
 
     function closeConfig() { document.getElementById('configModal').style.display = 'none'; }
@@ -238,11 +241,9 @@
     async function confirmConfig() {
         const nFile = document.getElementById('namesFile').files[0];
         if (nFile) namesData[activeG] = await parseFile(nFile);
-
         categoryData.words = await parseFile(document.getElementById('fWords').files[0]);
         categoryData.sents = await parseFile(document.getElementById('fSents').files[0]);
         categoryData.phonics = await parseFile(document.getElementById('fPhonics').files[0]);
-
         localStorage.setItem('wynn_drive', document.getElementById('driveLink').value);
         launch(activeG);
         closeConfig();
@@ -251,7 +252,6 @@
     function launch(g) {
         goBack('main');
         document.getElementById('gLabel').innerText = "Grade " + g;
-        
         const count = document.getElementById('classCount').value;
         const sel = document.getElementById('classSel');
         sel.innerHTML = '';
@@ -260,11 +260,9 @@
             let o = document.createElement('option'); o.value = v; o.innerText = v;
             sel.appendChild(o);
         }
-
         const grid = document.getElementById('seatGrid');
         grid.innerHTML = '';
         const students = namesData[g] || Array.from({length: 30}, (_, i) => `Student ${i+1}`);
-
         students.forEach((name, i) => {
             let s = document.createElement('div');
             s.className = 'seat';
@@ -277,19 +275,15 @@
     function openModal(n, el, name) {
         curSeat = n; curEl = el;
         document.getElementById('sLabel').innerText = name;
-        
-        // Build session playlist
         const doShuffle = document.getElementById('randomizeCheck').checked;
         sessionPlaylist = [
             ...pickItems(categoryData.words, document.getElementById('nWords').value, doShuffle),
             ...pickItems(categoryData.sents, document.getElementById('nSents').value, doShuffle),
             ...pickItems(categoryData.phonics, document.getElementById('nPhonics').value, doShuffle)
         ];
-
         if(sessionPlaylist.length === 0) sessionPlaylist = ["No words loaded"];
         currentWordIdx = 0;
         updateWordView();
-
         document.getElementById('modal').style.display = 'flex';
         document.getElementById('startBtn').style.display = 'block';
         document.getElementById('recControls').style.display = 'none';
@@ -308,15 +302,19 @@
     }
 
     async function start() {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        recorder = new MediaRecorder(stream);
-        chunks = [];
-        recorder.ondataavailable = e => chunks.push(e.data);
-        recorder.onstop = upload;
-        recorder.start();
-        document.getElementById('startBtn').style.display = 'none';
-        document.getElementById('recControls').style.display = 'block';
-        document.getElementById('status').innerText = "Recording...";
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            recorder = new MediaRecorder(stream);
+            chunks = [];
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = upload;
+            recorder.start();
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('recControls').style.display = 'block';
+            document.getElementById('status').innerText = "Recording...";
+        } catch (err) {
+            alert("Microphone access denied or not available.");
+        }
     }
 
     function stop() {
@@ -327,20 +325,34 @@
 
     function upload() {
         const reader = new FileReader();
-        reader.readAsDataURL(new Blob(chunks));
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+        reader.readAsDataURL(audioBlob);
         reader.onloadend = () => {
             const link = document.getElementById('driveLink').value;
             const id = (link.match(/[-\w]{25,}/) || [""])[0];
-            const params = new URLSearchParams();
-            params.append('audio', reader.result.split(',')[1]);
-            params.append('className', document.getElementById('classSel').value);
-            params.append('filename', `Seat${curSeat}_${document.getElementById('sLabel').innerText}.webm`);
-            params.append('folderId', id);
+            if (!id) {
+                alert("Please enter a Google Drive Link in Settings!");
+                return;
+            }
+            const payload = {
+                audio: reader.result.split(',')[1],
+                filename: `Seat${curSeat}_${document.getElementById('sLabel').innerText}.webm`,
+                folderId: id,
+                className: document.getElementById('classSel').value
+            };
+            const formBody = Object.keys(payload).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(payload[key])).join('&');
             
-            fetch(webAppURL, { method: 'POST', body: params.toString(), mode: 'no-cors' })
-            .then(() => {
+            fetch(webAppURL, {
+                method: 'POST',
+                body: formBody,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                mode: 'no-cors'
+            }).then(() => {
                 curEl.classList.add('done');
-                document.getElementById('modal').style.display = 'none';
+                document.getElementById('status').innerText = "Saved!";
+                setTimeout(() => { document.getElementById('modal').style.display = 'none'; }, 800);
+            }).catch(err => {
+                alert("Upload failed. Check script permissions.");
             });
         };
     }
