@@ -8,115 +8,162 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root { --p: #6c5ce7; --bg: #f0f3f9; --s: #00b894; --e: #ff7675; --glass: rgba(255, 255, 255, 0.9); }
-        body { font-family: 'Fredoka', sans-serif; background: #a29bfe; margin: 0; overflow: hidden; color: #2d3436; }
+        :root { --p: #6c5ce7; --bg: #f0f3f9; --s: #00b894; --e: #ff7675; --glass: rgba(255, 255, 255, 0.85); }
+        
+        body { 
+            font-family: 'Fredoka', sans-serif; 
+            background: url('bg.png') no-repeat center center fixed; 
+            background-size: cover;
+            margin: 0; overflow: hidden; color: #2d3436;
+        }
+
         .app { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; }
-        .view { width: 96%; height: 92%; background: var(--glass); backdrop-filter: blur(20px); border-radius: 40px; display: none; flex-direction: column; position: relative; box-shadow: 0 25px 80px rgba(0,0,0,0.1); animation: slideUp 0.4s ease-out; }
+
+        .view { 
+            width: 96%; height: 92%; background: var(--glass); 
+            backdrop-filter: blur(15px); border-radius: 40px; 
+            display: none; flex-direction: column; position: relative;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.15);
+            animation: slideUp 0.4s ease-out;
+        }
+
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        #titlePage { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .school-box { background: white; padding: 40px; border-radius: 30px; width: 300px; cursor: pointer; transition: 0.3s; border: 4px solid transparent; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin: 20px; }
+
+        /* Branding */
+        .title-text { font-size: 3.5rem; color: var(--p); margin-bottom: 0; text-shadow: 2px 2px 0px white; }
+        .footer { position: fixed; bottom: 20px; width: 100%; text-align: center; font-weight: 600; color: #444; pointer-events: none; }
+
+        .school-box { 
+            background: white; padding: 40px; border-radius: 30px; width: 300px;
+            cursor: pointer; transition: 0.3s; border: 4px solid transparent;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin: 20px;
+        }
         .school-box:hover { transform: scale(1.05); border-color: var(--p); }
-        #lobby { padding: 80px 40px; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .grade-pill { background: white; border-radius: 25px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; height: 120px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
-        .grade-pill:hover { background: var(--p); color: white; }
-        .grade-pill h2 { font-size: 2rem; }
+
         .navbar { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
         .grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; padding: 20px 40px; overflow-y: auto; }
-        .seat { background: white; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px; cursor: pointer; border: 3px solid transparent; transition: 0.2s; }
+        
+        .seat { 
+            background: white; border-radius: 20px; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; min-height: 120px; cursor: pointer; 
+            transition: 0.2s; border: 3px solid transparent;
+        }
+        .seat:hover { border-color: var(--p); transform: translateY(-5px); }
         .seat.done { background: var(--s); color: white; border-color: #009476; }
-        .input-f { background: #f1f2f6; padding: 12px; border-radius: 15px; border: 2px solid #dfe6e9; width: 100%; box-sizing: border-box; font-family: inherit; }
+
+        .input-f { background: #f1f2f6; padding: 12px; border-radius: 15px; border: 2px solid #dfe6e9; width: 100%; box-sizing: border-box; font-family: inherit; margin-top: 5px; }
         .btn { padding: 15px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
+        .btn:hover { filter: brightness(1.1); }
+
         #modal, #configModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-c { background: white; width: 90%; max-width: 700px; padding: 40px; border-radius: 40px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
-        .watermark { position: fixed; bottom: 10px; width: 100%; text-align: center; font-size: 14px; color: var(--p); opacity: 0.7; pointer-events: none; }
+        .modal-c { background: white; width: 90%; max-width: 750px; padding: 40px; border-radius: 40px; max-height: 90vh; overflow-y: auto; }
     </style>
 </head>
 <body>
 
+<audio id="sndHover" src="hover.mp3"></audio>
+<audio id="sndClick" src="click.mp3"></audio>
+
 <div class="app">
-    <div id="titlePage" class="view" style="display: flex;">
-        <h1 style="font-size: 3.5rem; color: var(--p); margin-bottom: 0;">Teacher Wynn's</h1>
-        <h2 style="font-size: 2rem; color: #555; margin-top: 0; margin-bottom: 40px;">English Recording Studio</h2>
-        <div style="display: flex; gap: 30px;">
-            <div class="school-box" onclick="showLobby('elem')"><i data-lucide="baby" size="48" color="#6c5ce7"></i><h2>Elementary</h2></div>
-            <div class="school-box" onclick="showLobby('junior')"><i data-lucide="graduation-cap" size="48" color="#6c5ce7"></i><h2>Junior High</h2></div>
+    <div id="titlePage" class="view" style="display: flex; align-items: center; justify-content: center;">
+        <h1 class="title-text">Teacher Wynn's Studio Pro</h1>
+        <div style="display: flex; gap: 30px; margin-top: 40px;">
+            <div class="school-box" onclick="playClick(); showLobby('elem')" onmouseenter="playHover()">
+                <i data-lucide="baby" size="48" color="#6c5ce7"></i>
+                <h2>Elementary</h2>
+            </div>
+            <div class="school-box" onclick="playClick(); showLobby('junior')" onmouseenter="playHover()">
+                <i data-lucide="graduation-cap" size="48" color="#6c5ce7"></i>
+                <h2>Junior High</h2>
+            </div>
         </div>
     </div>
 
     <div id="lobby" class="view">
-        <button onclick="goBack('titlePage')" style="position:absolute; top:20px; left:20px; border:none; background:none; cursor:pointer;"><i data-lucide="chevron-left" size="40"></i></button>
-        <h1 id="lobbyTitle" style="grid-column: span 3; text-align: center; color: var(--p);">Select Grade</h1>
-        <div id="gradeContainer" style="display: contents;"></div>
+        <button class="navbar-btn" onclick="playClick(); goBack('titlePage')" style="position:absolute; top:20px; left:20px; background:none; border:none; cursor:pointer;"><i data-lucide="chevron-left" size="40"></i></button>
+        <h1 style="text-align: center; color: var(--p); margin-top: 60px;">Select Your Grade</h1>
+        <div id="gradeContainer" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 40px;"></div>
     </div>
 
     <div id="main" class="view">
         <div class="navbar">
-            <button onclick="goBack('lobby')" style="border:none; background:none; color:var(--p); cursor:pointer;"><i data-lucide="arrow-left-circle" size="40"></i></button>
+            <button onclick="playClick(); goBack('lobby')" style="background:none; border:none; color:var(--p); cursor:pointer;"><i data-lucide="arrow-left-circle" size="40"></i></button>
             <div style="display:flex; gap:15px; align-items:center;">
                 <span id="gLabel" style="font-size:1.5rem; font-weight:700;"></span>
                 <select id="classSel" class="input-f" style="width:auto;"></select>
             </div>
-            <button onclick="promptConfig(activeG)" style="border:none; background:none; color:var(--p); cursor:pointer;"><i data-lucide="settings" size="32"></i></button>
+            <button onclick="playClick(); promptConfig(activeG)" style="background:none; border:none; color:var(--p); cursor:pointer;"><i data-lucide="settings" size="32"></i></button>
         </div>
         <div class="grid" id="seatGrid"></div>
     </div>
+
+    <div class="footer">Designed by Teacher Bridgette Wynn | Taichung City Public School System</div>
 </div>
 
 <div id="configModal">
     <div class="modal-c">
-        <h2 style="color:var(--p);">Settings</h2>
+        <h2 style="color:var(--p); margin-top:0;">Classroom Setup</h2>
         <label>Google Drive Folder Link</label>
         <input type="text" id="driveLink" class="input-f" placeholder="Paste link here...">
         
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:15px;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:15px;">
+            <div><label>Total Classes</label><input type="number" id="classCount" class="input-f" value="6"></div>
+            <div><label>Student Roster (.xlsx)</label><input type="file" id="namesFile" class="input-f" accept=".xlsx"></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:15px; text-align:left;">
             <div>
-                <label>Total Classes</label>
-                <input type="number" id="classCount" class="input-f" value="6">
+                <label><b>Words</b></label>
+                <input type="file" id="fWords" class="input-f">
+                <input type="number" id="nWords" class="input-f" placeholder="Qty (e.g. 5)">
             </div>
             <div>
-                <label>Student List (.xlsx)</label>
-                <input type="file" id="namesFile" class="input-f" accept=".xlsx">
+                <label><b>Sentences</b></label>
+                <input type="file" id="fSents" class="input-f">
+                <input type="number" id="nSents" class="input-f" placeholder="Qty (e.g. 2)">
+            </div>
+            <div>
+                <label><b>Phonics</b></label>
+                <input type="file" id="fPhonics" class="input-f">
+                <input type="number" id="nPhonics" class="input-f" placeholder="Qty (e.g. 3)">
             </div>
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:15px;">
-            <div><label>Words</label><input type="file" id="fWords" class="input-f"></div>
-            <div><label>Sentences</label><input type="file" id="fSents" class="input-f"></div>
-            <div><label>Phonics</label><input type="file" id="fPhonics" class="input-f"></div>
+        <div style="margin-top:20px;">
+            <label><input type="checkbox" id="randomizeCheck" checked> Randomize material order?</label>
         </div>
-        
-        <button class="btn" style="background:var(--s); color:white; width:100%; margin-top:25px;" onclick="confirmConfig()">Save & Launch</button>
-        <button class="btn" style="background:none; color:#999; width:100%;" onclick="document.getElementById('configModal').style.display='none'">Cancel</button>
+
+        <button class="btn" style="background:var(--s); color:white; width:100%; margin-top:25px;" onclick="playClick(); confirmConfig()">Confirm & Start</button>
     </div>
 </div>
 
 <div id="modal">
     <div class="modal-c" style="text-align:center;">
         <h2 id="sLabel" style="color:#aaa;">Student</h2>
-        <div id="wordBox" style="font-size:3.5rem; min-height:180px; display:flex; align-items:center; justify-content:center; color:var(--e); font-weight:700; line-height: 1.2;">Ready?</div>
+        <div id="wordCounter" style="color:var(--p); font-weight:600; margin-bottom:10px;">Item 1 of 1</div>
+        <div id="wordBox" style="font-size:3.5rem; min-height:180px; display:flex; align-items:center; justify-content:center; color:var(--e); font-weight:700; line-height:1.2;">Ready?</div>
         
-        <button id="startBtn" class="btn" style="background:var(--s); color:white; width:100%;" onclick="start()">Start Recording</button>
+        <button id="startBtn" class="btn" style="background:var(--s); color:white; width:100%;" onclick="playClick(); start()">Start Recording</button>
         
         <div id="recControls" style="display:none;">
-            <button id="nextBtn" class="btn" style="background:var(--p); color:white; width:100%; margin-bottom:10px;" onclick="nextWord()">Next Item</button>
-            <button id="stopBtn" class="btn" style="background:var(--e); color:white; width:100%;" onclick="stop()">Finish & Save</button>
+            <button id="nextBtn" class="btn" style="background:var(--p); color:white; width:100%; margin-bottom:10px;" onclick="playClick(); nextWord()">Next Item</button>
+            <button id="stopBtn" class="btn" style="background:var(--e); color:white; width:100%;" onclick="playClick(); stop()">Finish & Save</button>
         </div>
-
-        <div id="status" style="margin-top:20px; font-weight:600; color:var(--p); min-height: 24px;"></div>
+        <div id="status" style="margin-top:20px; font-weight:600; color:var(--p);"></div>
     </div>
 </div>
 
-<div class="watermark">Teacher Wynn's Studio Pro | 2026</div>
-
 <script>
-    // YOUR CURRENT WEB APP URL
     const webAppURL = 'https://script.google.com/macros/s/AKfycbx2Jw28iv2wUBEI4w570BKy1OxQD2edlgFfIyrU6iE-ZpIK9ClVyYGl0bXGNOUDHm8Bmw/exec';
     
     let activeG, recorder, chunks = [], curSeat, curEl, stream, sessionPlaylist = [], currentWordIdx = 0;
     let namesData = {}, categoryData = { words: [], sents: [], phonics: [] };
 
     lucide.createIcons();
+
+    // Sound Helpers
+    function playHover() { document.getElementById('sndHover').play().catch(()=>{}); }
+    function playClick() { document.getElementById('sndClick').play().catch(()=>{}); }
 
     function showLobby(type) {
         document.getElementById('titlePage').style.display = 'none';
@@ -125,9 +172,11 @@
         container.innerHTML = '';
         const grades = type === 'elem' ? [1,2,3,4,5,6] : [7,8,9];
         grades.forEach(g => {
-            const div = document.createElement('div'); div.className = 'grade-pill';
+            const div = document.createElement('div');
+            div.className = 'grade-pill';
             div.innerHTML = `<h2>Grade ${g}</h2>`;
-            div.onclick = () => promptConfig(g);
+            div.onmouseenter = playHover;
+            div.onclick = () => { playClick(); promptConfig(g); };
             container.appendChild(div);
         });
     }
@@ -140,8 +189,10 @@
     }
 
     function promptConfig(g) { 
-        activeG = g; document.getElementById('configModal').style.display = 'flex'; 
-        const saved = localStorage.getItem('wynn_drive'); if(saved) document.getElementById('driveLink').value = saved;
+        activeG = g; 
+        document.getElementById('configModal').style.display = 'flex'; 
+        const saved = localStorage.getItem('wynn_drive'); 
+        if(saved) document.getElementById('driveLink').value = saved;
     }
 
     async function parseFile(file) {
@@ -149,9 +200,15 @@
         return new Promise(res => {
             const r = new FileReader(); r.onload = (e) => {
                 const b = XLSX.read(e.target.result, {type: 'binary'});
-                res(XLSX.utils.sheet_to_json(b.Sheets[b.SheetNames[0]], {header:1}).flat().filter(i => i));
+                res(XLSX.utils.sheet_to_json(b.Sheets[b.SheetNames[0]], {header:1}).flat().filter(i => i && i.toString().trim() !== ""));
             }; r.readAsBinaryString(file);
         });
+    }
+
+    function pickItems(arr, count, shuffle) {
+        let list = [...arr];
+        if (shuffle) list.sort(() => Math.random() - 0.5);
+        return count > 0 ? list.slice(0, count) : list;
     }
 
     async function confirmConfig() {
@@ -160,43 +217,57 @@
         categoryData.sents = await parseFile(document.getElementById('fSents').files[0]);
         categoryData.phonics = await parseFile(document.getElementById('fPhonics').files[0]);
         localStorage.setItem('wynn_drive', document.getElementById('driveLink').value);
-        launch(activeG); document.getElementById('configModal').style.display = 'none';
+        launch(activeG); 
+        document.getElementById('configModal').style.display = 'none';
     }
 
     function launch(g) {
-        goBack('main'); document.getElementById('gLabel').innerText = "G" + g;
-        const sel = document.getElementById('classSel'); sel.innerHTML = '';
-        for(let i=1; i<=document.getElementById('classCount').value; i++){
-            let v = g + (i<10?"0"+i:i); sel.innerHTML += `<option value="${v}">${v}</option>`;
+        goBack('main');
+        document.getElementById('gLabel').innerText = "Grade " + g;
+        const count = document.getElementById('classCount').value;
+        const sel = document.getElementById('classSel');
+        sel.innerHTML = '';
+        for(let i=1; i<=count; i++){
+            let v = g + (i<10?"0"+i:i);
+            sel.innerHTML += `<option value="${v}">${v}</option>`;
         }
-        const grid = document.getElementById('seatGrid'); grid.innerHTML = '';
+        const grid = document.getElementById('seatGrid');
+        grid.innerHTML = '';
         const students = namesData[g] || Array.from({length: 30}, (_, i) => `Student ${i+1}`);
         students.forEach((name, i) => {
             const s = document.createElement('div'); s.className = 'seat';
             s.innerHTML = `<span style="font-size:1.8rem; font-weight:700;">${i+1}</span><small>${name}</small>`;
-            s.onclick = () => {
-                curSeat = i+1; curEl = s; document.getElementById('sLabel').innerText = name;
-                sessionPlaylist = [...categoryData.words, ...categoryData.sents, ...categoryData.phonics];
-                if(!sessionPlaylist.length) sessionPlaylist = ["Click Start to Begin"]; 
-                currentWordIdx = 0;
-                document.getElementById('wordBox').innerText = sessionPlaylist[0];
-                document.getElementById('modal').style.display = 'flex';
-                document.getElementById('startBtn').style.display = 'block';
-                document.getElementById('recControls').style.display = 'none';
-                document.getElementById('status').innerText = "";
-            }; grid.appendChild(s);
+            s.onmouseenter = playHover;
+            s.onclick = () => { playClick(); openModal(i+1, s, name); };
+            grid.appendChild(s);
         });
     }
 
-    function nextWord() { 
-        currentWordIdx++; 
-        if(currentWordIdx < sessionPlaylist.length) {
-            document.getElementById('wordBox').innerText = sessionPlaylist[currentWordIdx];
-        } else {
-            document.getElementById('wordBox').innerText = "All items finished!";
-            document.getElementById('nextBtn').style.display = 'none';
-        }
+    function openModal(n, el, name) {
+        curSeat = n; curEl = el;
+        document.getElementById('sLabel').innerText = name;
+        const doShuffle = document.getElementById('randomizeCheck').checked;
+        sessionPlaylist = [
+            ...pickItems(categoryData.words, document.getElementById('nWords').value, doShuffle),
+            ...pickItems(categoryData.sents, document.getElementById('nSents').value, doShuffle),
+            ...pickItems(categoryData.phonics, document.getElementById('nPhonics').value, doShuffle)
+        ];
+        if(!sessionPlaylist.length) sessionPlaylist = ["Click Start to Begin"];
+        currentWordIdx = 0;
+        updateWordView();
+        document.getElementById('modal').style.display = 'flex';
+        document.getElementById('startBtn').style.display = 'block';
+        document.getElementById('recControls').style.display = 'none';
+        document.getElementById('status').innerText = "";
     }
+
+    function updateWordView() {
+        document.getElementById('wordBox').innerText = sessionPlaylist[currentWordIdx];
+        document.getElementById('wordCounter').innerText = `Item ${currentWordIdx + 1} of ${sessionPlaylist.length}`;
+        document.getElementById('nextBtn').style.display = (currentWordIdx === sessionPlaylist.length - 1) ? 'none' : 'block';
+    }
+
+    function nextWord() { currentWordIdx++; updateWordView(); }
 
     async function start() {
         try {
@@ -207,40 +278,23 @@
             document.getElementById('startBtn').style.display = 'none';
             document.getElementById('recControls').style.display = 'block';
             document.getElementById('status').innerText = "🔴 Recording...";
-        } catch (e) { alert("Mic error: " + e.message); }
+        } catch (e) { alert("Mic Error: " + e.message); }
     }
 
     function stop() { 
         recorder.stop(); 
         stream.getTracks().forEach(t => t.stop()); 
-        document.getElementById('status').innerText = "⏳ Saving to Drive..."; 
+        document.getElementById('status').innerText = "⏳ Saving..."; 
     }
 
     function upload() {
         const r = new FileReader(); r.readAsDataURL(new Blob(chunks, {type:'audio/webm'}));
         r.onloadend = () => {
-            const driveLink = document.getElementById('driveLink').value;
-            const id = (driveLink.match(/[-\w]{25,}/) || [""])[0];
-            const payload = { 
-                audio: r.result.split(',')[1], 
-                filename: `Seat${curSeat}_${document.getElementById('sLabel').innerText}.webm`, 
-                folderId: id, 
-                className: document.getElementById('classSel').value 
-            };
+            const id = (document.getElementById('driveLink').value.match(/[-\w]{25,}/) || [""])[0];
+            const payload = { audio: r.result.split(',')[1], filename: `Seat${curSeat}_${document.getElementById('sLabel').innerText}.webm`, folderId: id, className: document.getElementById('classSel').value };
             const body = Object.keys(payload).map(k => encodeURIComponent(k) + '=' + encodeURIComponent(payload[k])).join('&');
-            
-            fetch(webAppURL, { 
-                method: 'POST', 
-                body: body, 
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
-                mode: 'no-cors' 
-            }).then(() => { 
-                curEl.classList.add('done'); 
-                document.getElementById('status').innerText = "✅ Saved!"; 
-                setTimeout(()=>document.getElementById('modal').style.display='none', 1000); 
-            }).catch(err => {
-                document.getElementById('status').innerText = "❌ Upload Failed";
-            });
+            fetch(webAppURL, { method: 'POST', body: body, headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, mode: 'no-cors' })
+            .then(() => { curEl.classList.add('done'); document.getElementById('status').innerText = "✅ Saved!"; setTimeout(()=>document.getElementById('modal').style.display='none', 1000); });
         };
     }
 </script>
