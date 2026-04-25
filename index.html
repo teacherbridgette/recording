@@ -7,51 +7,83 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --bg-green: #7a9e60; --sun-orange: #e2a87a; --deep-brown: #665040;
-            --paper-white: rgba(252, 251, 242, 0.96); --primary: var(--bg-green);
-            --secondary: var(--sun-orange); --accent: #a48c7e;
+            --bg-green: #7a9e60; 
+            --sun-orange: #e2a87a; 
+            --deep-brown: #665040;
+            --paper-white: rgba(252, 251, 242, 0.96); 
+            --primary: var(--bg-green);
+            --secondary: var(--sun-orange); 
+            --accent: #a48c7e;
+            --neon-glow: rgba(169, 204, 158, 0.8);
         }
+
         body { 
-            font-family: 'Fredoka', 'Comic Sans MS', sans-serif; background: #f0f4ef; 
-            margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: var(--deep-brown);
+            font-family: 'Fredoka', 'Comic Sans MS', sans-serif; 
+            background: #f0f4ef url('bg.png') no-repeat center center fixed; 
+            background-size: cover; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            color: var(--deep-brown);
         }
+
+        /* Screen Management */
         .screen { display: none; width: 95%; max-width: 900px; padding: 20px; animation: fadeIn 0.4s ease; }
         .active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
         .card { 
             background: var(--paper-white); border-radius: 40px; padding: 30px; 
-            border: 3px solid var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-top: 20px; 
+            border: 3px solid var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            margin-top: 20px; backdrop-filter: blur(5px);
         }
 
-        h2, h3 { margin-top: 0; font-variant: small-caps; color: var(--deep-brown); }
-        
-        /* Layout for the Config Screen */
-        .setup-box { border: 2px dashed #ccc; border-radius: 20px; padding: 20px; margin-bottom: 20px; background: rgba(255,255,255,0.4); }
-        .input-group { margin-bottom: 15px; }
-        .input-box { padding: 10px; border-radius: 10px; border: 1px solid #ccc; width: 100%; font-family: inherit; box-sizing: border-box; }
-        
-        .class-card { background: white; border: 1px solid #ddd; border-radius: 15px; padding: 15px; margin-bottom: 10px; }
-        .material-row { display: grid; grid-template-columns: 1fr 1fr 100px; gap: 15px; align-items: center; margin-bottom: 10px; }
-
+        /* Buttons & Neon Effects */
         .btn { 
-            padding: 15px 25px; border-radius: 20px; border: none; font-size: 1.2rem; font-weight: 600; 
-            cursor: pointer; background: var(--primary); color: white; box-shadow: 0 6px 0 #5a7a48; width: 100%; font-variant: small-caps;
+            padding: 15px 25px; border-radius: 20px; border: 2px solid transparent; font-size: 1.2rem; 
+            font-weight: 600; cursor: pointer; background: var(--primary); color: white; 
+            box-shadow: 0 6px 0 #5a7a48; width: 100%; font-variant: small-caps; transition: all 0.2s ease;
         }
-        .btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #5a7a48; }
+
+        .btn:hover, .seat:hover {
+            box-shadow: 0 0 15px 5px var(--neon-glow), 0 6px 0 #5a7a48;
+            transform: scale(1.02);
+            border-color: #fff;
+        }
+
+        .btn:active, .seat:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 20px 5px var(--sun-orange);
+        }
+
         .btn-pink { background: var(--secondary); box-shadow: 0 6px 0 #b88661; }
 
+        /* Configuration Layout */
+        .setup-box { border: 2px dashed #ccc; border-radius: 20px; padding: 20px; margin-bottom: 20px; background: rgba(255,255,255,0.4); }
+        .input-box { padding: 10px; border-radius: 10px; border: 1px solid #ccc; width: 100%; font-family: inherit; box-sizing: border-box; }
+        .class-card { background: white; border: 1px solid #ddd; border-radius: 15px; padding: 15px; margin-bottom: 10px; }
+        .material-row { display: grid; grid-template-columns: 1fr 1fr 100px; gap: 15px; align-items: center; margin-bottom: 15px; }
+
+        /* Grid & Recorder */
         .seat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; margin-top: 20px; }
-        .seat { background: white; border-radius: 15px; padding: 20px 10px; text-align: center; border: 3px solid #eee; cursor: pointer; font-weight: bold; }
+        .seat { 
+            background: white; border-radius: 15px; padding: 20px 10px; text-align: center; 
+            border: 3px solid #eee; cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
         .seat.done { background: #a9cc9e; color: white; border-color: #8fb376; }
 
-        #word-display { font-size: 3.5rem; color: var(--secondary); text-align: center; margin: 30px 0; font-weight: 600; font-variant: small-caps; }
+        #word-display { font-size: 3.5rem; color: var(--secondary); text-align: center; margin: 30px 0; font-weight: 600; font-variant: small-caps; text-shadow: 2px 2px 0 white; }
     </style>
 </head>
 <body>
 
+    <audio id="snd-hover" src="hover.mp3" preload="auto"></audio>
+    <audio id="snd-click" src="click.mp3" preload="auto"></audio>
+
     <div id="view-start" class="screen active">
-        <h1 style="text-align:center; color:white; text-shadow: 2px 2px var(--deep-brown);">Studio Launcher</h1>
+        <h1 style="text-align:center; color:white; text-shadow: 3px 3px var(--deep-brown);">English Recording Studio</h1>
         <div class="card">
             <button class="btn" onclick="navToConfig('Elementary')">Elementary School</button>
             <button class="btn btn-pink" style="margin-top:15px;" onclick="navToConfig('Junior High')">Junior High School</button>
@@ -60,19 +92,17 @@
 
     <div id="view-config" class="screen">
         <div class="card">
-            <h3>Drive Settings</h3>
+            <h3>1. Drive Settings</h3>
             <input type="text" id="drive-url" class="input-box" placeholder="Paste Shared Google Drive Folder Link here...">
             
             <div class="setup-box" style="margin-top:20px;">
-                <h3>Classes</h3>
-                <div class="input-group">
-                    <input type="number" id="num-classes" class="input-box" value="3" onchange="buildClassInputs()">
-                </div>
-                <div id="class-list"></div>
+                <h3>2. Classes</h3>
+                <input type="number" id="num-classes" class="input-box" value="3" onchange="buildClassInputs()">
+                <div id="class-list" style="margin-top:10px;"></div>
             </div>
 
             <div class="setup-box">
-                <h3>Materials</h3>
+                <h3>3. Materials</h3>
                 <div class="material-row">
                     <div><strong>Words:</strong><br><input type="file" id="up-words"></div>
                     <select id="mode-words" class="input-box" onchange="toggleQty('words')"><option value="rnd">Random</option><option value="all">All</option></select>
@@ -103,10 +133,10 @@
 
     <div id="view-recorder" class="screen">
         <div class="card" style="text-align: center;">
-            <div id="status-msg" style="color:var(--accent);">Ready</div>
+            <div id="status-msg" style="color:var(--accent); font-weight: 600;">Ready</div>
             <h2 id="student-name-display">Student</h2>
             <div id="word-display">...</div>
-            <div id="rating-display" style="font-size: 2rem; font-weight: 600;">Score: --/10</div>
+            <div id="rating-display" style="font-size: 2.5rem; font-weight: 600;">Score: --/10</div>
             <div style="display:flex; gap:15px; margin-top:20px;">
                 <button id="mic-btn" class="btn" style="flex:2" onclick="toggleMic()">🎤 Record</button>
                 <button class="btn btn-pink" style="flex:1" onclick="showView('view-grid')">Back</button>
@@ -116,16 +146,35 @@
 
 <script>
     const BRIDGE_URL = "https://script.google.com/macros/s/AKfycby2m6oTlF4ASJlDoFXMNZ0Dl29V7Q3mZdpzTCLuZGVG6uvdPd_ewM4-BafSMFtj6Cc/exec";
+    const hSnd = document.getElementById('snd-hover');
+    const cSnd = document.getElementById('snd-click');
     
-    let studio = { grade: '', pool: [], classNames: {}, settings: {} };
+    let studio = { grade: '', pool: [], classNames: {} };
     let isRec = false, mediaRec, chunks = [], recognition, latestScore = 6;
     let activeStudentName = "", currentPromptIndex = 0, currentStudentPrompts = [];
+
+    // Sound Logic
+    function playClick() { cSnd.currentTime = 0; cSnd.play().catch(()=>{}); }
+    function playHover() { hSnd.currentTime = 0; hSnd.play().catch(()=>{}); }
+
+    function attachListeners() {
+        const targets = document.querySelectorAll('.btn, .seat, .class-card');
+        targets.forEach(t => {
+            t.onmouseenter = playHover;
+            t.onmousedown = playClick;
+        });
+    }
+
+    // Run sound check whenever DOM changes
+    const observer = new MutationObserver(attachListeners);
+    observer.observe(document.body, { childList: true, subtree: true });
 
     if(localStorage.getItem('saved_drive_link')) document.getElementById('drive-url').value = localStorage.getItem('saved_drive_link');
 
     function showView(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+        attachListeners();
     }
 
     function navToConfig(gType) {
@@ -146,7 +195,7 @@
             const cid = `${studio.grade}0${i}`;
             area.innerHTML += `
                 <div class="class-card">
-                    <strong>Class ${cid}</strong>
+                    <strong>Class ${cid} Name List:</strong>
                     <input type="file" id="names-${cid}" class="input-box" style="border:none; padding:5px;" accept=".txt">
                 </div>`;
         }
@@ -179,10 +228,7 @@
         let lines = (await f.text()).split('\n').filter(l => l.trim());
         const mode = document.getElementById('mode-' + type).value;
         const qty = parseInt(document.getElementById('qty-' + type).value);
-        
-        if(mode === 'rnd' && qty > 0) {
-            lines = lines.sort(() => 0.5 - Math.random()).slice(0, qty);
-        }
+        if(mode === 'rnd' && qty > 0) lines = lines.sort(() => 0.5 - Math.random()).slice(0, qty);
         studio.pool.push(...lines);
     }
 
@@ -195,7 +241,7 @@
             const s = document.createElement('div');
             const name = names[i-1] || "";
             s.className = 'seat'; s.id = 'seat-'+i;
-            s.innerHTML = `${i}<br><small>${name}</small>`;
+            s.innerHTML = `${i}<br><span style="font-size:0.8rem; opacity:0.7;">${name}</span>`;
             s.onclick = () => { window.activeS = i; activeStudentName = name; openBooth(); };
             grid.appendChild(s);
         }
@@ -232,7 +278,8 @@
             mediaRec.ondataavailable = e => chunks.push(e.data);
             mediaRec.onstop = upload;
             mediaRec.start(); recognition.start();
-            isRec = true; btn.innerText = "🛑 Stop"; btn.style.background = "#e2a87a";
+            isRec = true; btn.innerText = "🛑 Stop"; btn.style.background = "var(--secondary)";
+            document.getElementById('status-msg').innerText = "Listening...";
         } else {
             mediaRec.stop(); recognition.stop();
             isRec = false; btn.innerText = "🎤 Record"; btn.style.background = "var(--primary)";
@@ -240,7 +287,7 @@
     }
 
     async function upload() {
-        document.getElementById('status-msg').innerText = "Saving...";
+        document.getElementById('status-msg').innerText = "Saving to Drive...";
         const reader = new FileReader();
         reader.readAsDataURL(new Blob(chunks, { type: 'audio/webm' }));
         reader.onloadend = async () => {
@@ -259,6 +306,7 @@
             }
         };
     }
+    attachListeners();
 </script>
 </body>
 </html>
