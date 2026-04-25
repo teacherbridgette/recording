@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Wynn's Studio: Hybrid Edition</title>
+    <title>Wynn's Studio Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root { 
-            --p: #6c5ce7; --bg: #f0f3f9; --s: #00b894; --e: #ff7675; --glass: rgba(255, 255, 255, 0.9);
-            --deep-brown: #665040; --sun-orange: #e2a87a;
+            --p: #6c5ce7; --bg: #f0f3f9; --s: #00b894; --e: #ff7675; --glass: rgba(255, 255, 255, 0.95);
         }
         
         body { 
             font-family: 'Fredoka', "Comic Sans MS", cursive; 
             background: #7a9e60 url('bg.png') no-repeat center center fixed; 
-            background-size: cover; margin: 0; overflow: hidden; color: var(--deep-brown);
+            background-size: cover; margin: 0; overflow: hidden;
         }
 
         .app { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.1); }
@@ -41,11 +40,11 @@
         .grade-pill h2 { font-size: 2.2rem; color: var(--p); font-variant: small-caps; }
 
         .navbar { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
-        .grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 0 40px 40px; overflow-y: auto; }
+        .grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; padding: 0 40px 40px; overflow-y: auto; }
 
         .seat { 
             background: white; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            min-height: 110px; cursor: pointer; transition: 0.2s; border: 3px solid #eee;
+            min-height: 110px; cursor: pointer; transition: 0.2s; border: 3px solid #eee; text-align: center;
         }
         .seat.done { background: var(--s); color: white; border-color: transparent; }
         .seat span.s-num { font-size: 2rem; font-weight: 700; }
@@ -56,7 +55,7 @@
         #configModal, #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; }
         .modal-c { background: white; width: 90%; max-width: 700px; padding: 40px; border-radius: 40px; text-align: center; max-height: 90vh; overflow-y: auto; }
         
-        #wordBox { font-size: clamp(2rem, 10vw, 4.5rem); color: var(--p); margin: 25px 0; font-weight: 700; font-variant: small-caps; min-height: 150px; display: flex; align-items: center; justify-content: center; }
+        #wordBox { font-size: clamp(2rem, 10vw, 4.5rem); color: var(--p); margin: 25px 0; font-weight: 700; font-variant: small-caps; min-height: 150px; display: flex; align-items: center; justify-content: center; line-height: 1.1; }
         
         .setup-row { display: grid; grid-template-columns: 1fr 1fr 100px; gap: 10px; align-items: center; margin-bottom: 15px; text-align: left; }
     </style>
@@ -65,7 +64,7 @@
 
 <div class="app">
     <div id="lobby" class="view" style="display: grid;">
-        <h1 style="position:absolute; top:20px; left:50%; transform:translateX(-50%); color:var(--p); font-variant: small-caps;">Teacher Wynn's Studio</h1>
+        <h1 style="position:absolute; top:20px; left:50%; transform:translateX(-50%); color:var(--p); font-variant: small-caps;">Teacher Wynn's Studio Pro</h1>
         <div class="grade-pill" onclick="prepConfig(1)"><h2>Grade 1</h2></div>
         <div class="grade-pill" onclick="prepConfig(2)"><h2>Grade 2</h2></div>
         <div class="grade-pill" onclick="prepConfig(3)"><h2>Grade 3</h2></div>
@@ -76,12 +75,12 @@
 
     <div id="main" class="view">
         <div class="navbar">
-            <button onclick="location.reload()" style="border:none; background:none; cursor:pointer; color:var(--p);"><i data-lucide="home"></i></button>
+            <button onclick="location.reload()" style="border:none; background:none; cursor:pointer; color:var(--p);"><i data-lucide="arrow-left-circle"></i></button>
             <div style="display:flex; gap:15px; align-items:center;">
                 <span id="gLabel" style="font-size:1.5rem; font-weight:700;"></span>
                 <select id="classSel" class="input-f" style="width:auto;" onchange="renderGrid()"></select>
             </div>
-            <i data-lucide="settings" style="cursor:pointer;" onclick="document.getElementById('configModal').style.display='flex'"></i>
+            <i data-lucide="settings" style="cursor:pointer; color:var(--p);" onclick="document.getElementById('configModal').style.display='flex'"></i>
         </div>
         <div class="grid" id="seatGrid"></div>
     </div>
@@ -89,21 +88,21 @@
 
 <div id="configModal">
     <div class="modal-c">
-        <h2 style="color:var(--p);">Grade <span id="confG"></span> Configuration</h2>
+        <h2 style="color:var(--p); font-variant: small-caps;">Setup Grade <span id="confG"></span></h2>
         
         <div style="text-align:left; margin-bottom:20px;">
-            <label><b>Google Drive Folder Link</b></label>
-            <input type="text" id="driveLink" class="input-f" placeholder="Paste link here...">
+            <label><b>1. Paste Drive Folder Link</b></label>
+            <input type="text" id="driveLink" class="input-f" placeholder="https://drive.google.com/drive/folders/...">
         </div>
 
         <div style="text-align:left; margin-bottom:20px;">
-            <label><b>Student Names (.txt)</b></label>
+            <label><b>2. Student Names (.txt)</b></label>
             <input type="file" id="nameFiles" class="input-f" multiple accept=".txt">
-            <small>Upload files named '401.txt', '402.txt', etc.</small>
+            <small style="color:#888;">Name files like "501.txt", "502.txt"</small>
         </div>
 
         <div style="border-top: 1px solid #eee; padding-top: 15px;">
-            <p><b>Material Setup</b></p>
+            <p style="text-align:left;"><b>3. Recording Materials</b></p>
             <div class="setup-row">
                 <span>Words:</span>
                 <input type="file" id="file-words" class="input-f">
@@ -116,14 +115,14 @@
             </div>
         </div>
 
-        <button class="btn" style="background:var(--s); margin-top:20px;" onclick="confirmLauncher()">Launch Studio ✨</button>
+        <button class="btn" style="background:var(--s); margin-top:20px;" onclick="confirmLauncher()">Confirm & Start ✨</button>
     </div>
 </div>
 
 <div id="modal">
     <div class="modal-c">
-        <h2 id="sLabel" style="opacity:0.5;">Student</h2>
-        <div id="wordCounter" style="color:var(--p); font-weight:600;">Item 1 of 1</div>
+        <h2 id="sLabel" style="opacity:0.4; font-variant: small-caps;">Student</h2>
+        <div id="wordCounter" style="color:var(--p); font-weight:600; margin-bottom:10px;">Item 1 of 1</div>
         <div id="wordBox">Ready?</div>
         
         <button id="startBtn" class="btn" style="background:var(--s);" onclick="startRec()">Start Recording</button>
@@ -132,15 +131,16 @@
             <button id="nextBtn" class="btn" style="background:var(--p); margin-bottom:10px;" onclick="nextItem()">Next Item</button>
             <button id="stopBtn" class="btn" style="background:var(--e);" onclick="stopRec()">Stop & Save</button>
         </div>
-        <div id="status" style="margin-top:15px; font-weight:600;">...</div>
+        <div id="status" style="margin-top:15px; font-weight:700; color:var(--p);">...</div>
         <button onclick="closeModal()" id="cancelBtn" style="margin-top:20px; border:none; background:none; color:#999; cursor:pointer;">Cancel</button>
     </div>
 </div>
 
 <script>
-    // Hybrid Logic: Combines Launcher Setup with Pro Recording [cite: 38, 84]
-    const BRIDGE_URL = 'https://script.google.com/macros/s/AKfycbxA2t_Wu09yy6FGf4nHNsBi2jPYQ9qerdcgo7BszqAj4ne0I3NbEcTPVmwsHsC6ZGw/exec';
-    let studio = { activeG: 0, names: {}, pool: [], currentIdx: 0, recorder: null, chunks: [], activeStudent: "" };
+    // PASTE YOUR SCRIPT URL HERE
+    const BRIDGE_URL = 'https://script.google.com/macros/s/AKfycbzhOJ-jicorFFeMuQkjISvNmollLe7xC9ubKjATH-qze3PgMJMhOPSTDvBE3XHX_fd-mg/exec';
+    
+    let studio = { activeG: 0, names: {}, pool: [], currentIdx: 0, recorder: null, chunks: [], activeStudent: "", activeSeat: 0 };
 
     lucide.createIcons();
 
@@ -152,23 +152,23 @@
     }
 
     async function confirmLauncher() {
-        // 1. Process Names for Classes [cite: 56, 57]
         const nFiles = document.getElementById('nameFiles').files;
+        if(nFiles.length === 0) { alert("Please upload student name files."); return; }
+
         for (let f of nFiles) {
             const className = f.name.replace('.txt', '');
             const text = await f.text();
             studio.names[className] = text.split('\n').filter(n => n.trim());
         }
 
-        // 2. Process Materials with Randomization [cite: 60, 61]
         studio.pool = [];
         await loadPool('file-words', 'qty-words');
         await loadPool('file-sentences', 'qty-sentences');
+        if(studio.pool.length === 0) studio.pool = ["No items loaded"];
 
-        // 3. Setup Dropdown
         const sel = document.getElementById('classSel');
         sel.innerHTML = '';
-        Object.keys(studio.names).forEach(c => {
+        Object.keys(studio.names).sort().forEach(c => {
             sel.innerHTML += `<option value="${c}">${c}</option>`;
         });
 
@@ -185,7 +185,7 @@
         const qty = parseInt(document.getElementById(qtyId).value) || 0;
         if (f) {
             let lines = (await f.text()).split('\n').filter(l => l.trim());
-            lines = lines.sort(() => 0.5 - Math.random()); // Launcher's random feature 
+            lines = lines.sort(() => 0.5 - Math.random());
             if (qty > 0) lines = lines.slice(0, qty);
             studio.pool.push(...lines);
         }
@@ -208,16 +208,18 @@
 
     function openBooth(num, name) {
         studio.activeStudent = name;
+        studio.activeSeat = num;
         studio.currentIdx = 0;
         document.getElementById('sLabel').innerText = `${num}. ${name}`;
         updateBoothUI();
         document.getElementById('modal').style.display = 'flex';
         document.getElementById('startBtn').style.display = 'block';
         document.getElementById('recControls').style.display = 'none';
+        document.getElementById('status').innerText = "Ready";
     }
 
     function updateBoothUI() {
-        document.getElementById('wordBox').innerText = studio.pool[studio.currentIdx] || "Finished!";
+        document.getElementById('wordBox').innerText = studio.pool[studio.currentIdx];
         document.getElementById('wordCounter').innerText = `Item ${studio.currentIdx + 1} of ${studio.pool.length}`;
         document.getElementById('nextBtn').style.display = (studio.currentIdx >= studio.pool.length - 1) ? 'none' : 'block';
     }
@@ -233,13 +235,14 @@
         studio.recorder.start();
         
         document.getElementById('startBtn').style.display = 'none';
+        document.getElementById('cancelBtn').style.display = 'none';
         document.getElementById('recControls').style.display = 'block';
         document.getElementById('status').innerText = "🔴 Recording...";
     }
 
     function stopRec() {
         studio.recorder.stop();
-        document.getElementById('status').innerText = "⌛ Saving...";
+        document.getElementById('status').innerText = "⌛ Sending to Drive...";
     }
 
     function uploadToDrive() {
@@ -248,14 +251,22 @@
         reader.onloadend = () => {
             const payload = {
                 audio: reader.result.split(',')[1],
-                filename: `${document.getElementById('classSel').value}_${studio.activeStudent}.webm`,
+                filename: `Seat${studio.activeSeat}_${studio.activeStudent}.webm`,
+                className: document.getElementById('classSel').value,
                 folderUrl: document.getElementById('driveLink').value
             };
-            // Post to your Google Apps Script [cite: 85]
-            fetch(BRIDGE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
-            .then(() => {
+
+            fetch(BRIDGE_URL, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: JSON.stringify(payload) 
+            }).then(() => {
                 document.getElementById('status').innerText = "✅ Saved!";
-                setTimeout(closeModal, 1000);
+                document.getElementById(`seat-${studio.activeSeat}`).classList.add('done');
+                setTimeout(closeModal, 1200);
+            }).catch(err => {
+                document.getElementById('status').innerText = "❌ Error uploading";
+                console.error(err);
             });
         };
     }
