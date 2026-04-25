@@ -19,8 +19,7 @@
 
         body { 
             font-family: 'Fredoka', 'Comic Sans MS', sans-serif; 
-            background: url('bg.png') no-repeat center center fixed; 
-            background-size: cover; margin: 0; display: flex; 
+            background: #f4f1de; margin: 0; display: flex; 
             flex-direction: column; align-items: center; min-height: 100vh;
             color: var(--deep-brown);
         }
@@ -34,7 +33,7 @@
         }
 
         .studio-title { 
-            font-size: 3.2rem; color: white; text-shadow: 4px 4px 0 var(--deep-brown); 
+            font-size: 3.2rem; color: var(--primary); text-shadow: 2px 2px 0 white; 
             text-align: center; margin-top: 50px; font-variant: small-caps;
         }
 
@@ -54,16 +53,11 @@
             box-shadow: 0 8px 0 #5a7a48; margin: 12px 0; width: 100%; font-variant: small-caps; 
             transition: all 0.2s ease;
         }
-        .btn:hover { 
-            border-color: #fff; 
-            box-shadow: 0 0 20px var(--neon-green), 0 0 40px var(--neon-green); 
-            transform: scale(1.02); 
-        }
+        .btn:hover { border-color: #fff; transform: scale(1.02); }
         .btn-pink { background: var(--secondary); box-shadow: 0 8px 0 #b88661; }
         .btn-green { background: #8fb376; box-shadow: 0 8px 0 #6d8a57; }
 
         .config-section { background: rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 20px; margin: 15px 0; border: 2px dashed var(--accent); }
-        .config-row { display: grid; grid-template-columns: 2fr 1.5fr 100px; gap: 15px; align-items: center; margin-bottom: 12px; }
         .input-box { padding: 10px; border-radius: 12px; border: 2px solid #ccc; width: 100%; font-family: inherit; font-size: 1rem; box-sizing: border-box; }
 
         .seat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; margin-top: 25px; }
@@ -72,17 +66,12 @@
             text-align: center; border: 4px solid #eee; cursor: pointer; 
             font-weight: bold; font-size: 1.2rem; transition: 0.3s;
         }
-        .seat.done { background: #8fb376 !important; color: white !important; border-color: #6d8a57 !important; box-shadow: 0 0 15px var(--neon-green); }
+        .seat.done { background: #8fb376 !important; color: white !important; border-color: #6d8a57 !important; }
 
         #word-display { font-size: 4.5rem; color: var(--secondary); text-align: center; margin: 25px 0; font-variant: small-caps; font-weight: 600; text-shadow: 2px 2px 0 white; }
         #rating-display { font-size: 3.5rem; font-weight: 600; color: var(--deep-brown); margin: 10px 0; }
 
-        footer {
-            margin-top: auto; padding: 20px; text-align: center; width: 100%;
-            background: var(--paper-white); border-top: 3px solid var(--primary);
-            font-weight: 600; font-size: 0.9rem;
-        }
-
+        footer { margin-top: auto; padding: 20px; text-align: center; width: 100%; font-weight: 600; font-size: 0.9rem; color: var(--accent); }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -92,9 +81,6 @@
         <button class="widget-btn" onclick="toggleFS()">📺</button>
         <button class="widget-btn" onclick="clearCache()">🧹</button>
     </div>
-
-    <audio id="snd-hover" src="hover.mp3" preload="auto"></audio>
-    <audio id="snd-click" src="click.mp3" preload="auto"></audio>
 
     <div id="view-start" class="screen active">
         <h1 class="studio-title">Teacher Wynn's Recording Studio</h1>
@@ -114,38 +100,25 @@
         <div class="card">
             <h2 style="color: var(--primary)">Studio Setup</h2>
             <div class="config-section">
-                <h3>Storage Destination</h3>
-                <input type="text" id="drive-link" class="input-box" placeholder="Paste Google Drive Folder Link Here..." onchange="saveDriveLink()">
+                <h3>1. Storage (Google Drive Link)</h3>
+                <input type="text" id="drive-link" class="input-box" placeholder="Paste Folder Link..." onchange="saveDriveLink()">
             </div>
             <div class="config-section">
-                <h3>Classes</h3>
+                <h3>2. Class Setup</h3>
                 <input type="number" id="num-classes" class="input-box" value="3" onchange="buildClassInputs()">
                 <div id="class-entry-area" style="margin-top:10px;"></div>
             </div>
             <div class="config-section">
-                <h3>Materials</h3>
-                <div class="config-row">
-                    <div><strong>Words:</strong><br><input type="file" id="up-words"></div>
-                    <select id="mode-words" class="input-box" onchange="toggleQty('mode-words', 'qty-words')"><option value="rnd">Random</option><option value="all">All</option></select>
-                    <input type="number" id="qty-words" class="input-box" placeholder="Qty">
-                </div>
-                <div class="config-row">
-                    <div><strong>Sentences:</strong><br><input type="file" id="up-sentences"></div>
-                    <select id="mode-sentences" class="input-box" onchange="toggleQty('mode-sentences', 'qty-sentences')"><option value="rnd">Random</option><option value="all">All</option></select>
-                    <input type="number" id="qty-sentences" class="input-box" placeholder="Qty">
-                </div>
-                <div class="config-row">
-                    <div><strong>Phonics:</strong><br><input type="file" id="up-phonics"></div>
-                    <select id="mode-phonics" class="input-box" onchange="toggleQty('mode-phonics', 'qty-phonics')"><option value="rnd">Random</option><option value="all">All</option></select>
-                    <input type="number" id="qty-phonics" class="input-box" placeholder="Qty">
-                </div>
+                <h3>3. Materials (.txt files)</h3>
+                <input type="file" id="up-pool" class="input-box">
+                <p style="font-size: 0.8rem; color: #666;">Upload one TXT file with words/sentences on each line.</p>
             </div>
             <button class="btn btn-green" onclick="startSession()">Open Studio 🚀</button>
         </div>
     </div>
 
     <div id="view-grid" class="screen">
-        <h2 id="display-cid" style="font-size: 2.5rem; color:var(--primary); text-shadow: 2px 2px 0 white;">Class</h2>
+        <h2 id="display-cid" style="font-size: 2.5rem; color:var(--primary);">Class</h2>
         <select id="class-nav" class="input-box" style="width: auto; min-width: 180px;" onchange="renderGrid()"></select>
         <div id="main-grid" class="seat-grid"></div>
         <button class="btn" style="background:#888; box-shadow:0 8px 0 #555; margin-top:30px;" onclick="showView('view-config')">Settings</button>
@@ -166,40 +139,31 @@
         </div>
     </div>
 
-    <footer>
-        Teacher Wynn is a Filipina English teacher working under the<br>
-        Taiwan Foreign English Teacher Program (TFETP).
-    </footer>
+    <footer>Teacher Wynn | Taiwan TFETP | Bilingual 2030</footer>
 
 <script>
-    // --- 1. CONFIGURATION ---
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz-bXXpBFCkhmXJC1bZCAoNPDGxZkZdb_rsZwTTQ9xOuosKjbQ_APKrg4NTWa9AuQOz/exec";
+    // --- CONFIGURATION ---
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3cd7Qwvi9MU3Uua4J4ZbsGu3t3kpGlhewYH-O-6YA2ztnqF-Vk5Cu_60WABIkWeo2/exec";
     
-    const hSnd = document.getElementById('snd-hover');
-    const cSnd = document.getElementById('snd-click');
-    
-    let studio = { grade: '', pool: [], classNames: {}, settings: {}, driveLink: '' };
+    let studio = { grade: '', pool: [], classNames: {}, driveLink: '' };
     let isRec = false, mediaRec, chunks = [], recognition, latestScore = 0;
     let activeStudentName = "", currentPromptIndex = 0, currentStudentPrompts = [];
     let sessionScores = [], sessionAudioChunks = [];
 
-    // --- 2. SPEECH RECOGNITION SETUP ---
+    // --- SPEECH RECOGNITION (KIND TEACHER LOGIC) ---
     if ('webkitSpeechRecognition' in window) {
         recognition = new webkitSpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
         recognition.lang = 'en-US';
-
         recognition.onresult = (e) => {
             const transcript = e.results[0][0].transcript.toLowerCase().trim();
             const target = currentStudentPrompts[currentPromptIndex].toLowerCase().trim();
-            const confidence = e.results[0][0].confidence;
-
-            if (transcript === target) latestScore = 10;
-            else if (transcript.includes(target) || target.includes(transcript)) latestScore = 8;
-            else latestScore = Math.min(6, Math.max(1, Math.ceil(confidence * 10)));
             
-            document.getElementById('status-msg').innerText = `Heard: "${transcript}"`;
+            if (transcript === target) latestScore = 10;
+            else if (transcript.includes(target) || target.includes(transcript)) latestScore = 9;
+            else if (transcript[0] === target[0]) latestScore = 8;
+            else latestScore = 7; // Participation points!
+            
+            document.getElementById('status-msg').innerText = `Teacher heard: "${transcript}"`;
         };
     }
 
@@ -213,32 +177,10 @@
         localStorage.setItem('wynn_drive_link', studio.driveLink);
     }
 
-    function toggleQty(selId, qtyId) {
-        const sel = document.getElementById(selId);
-        const qty = document.getElementById(qtyId);
-        qty.disabled = (sel.value === 'all');
-        if(qty.disabled) qty.value = '';
-    }
-
-    function attachListeners() {
-        document.querySelectorAll('.btn, .seat, .widget-btn').forEach(el => {
-            el.onmouseenter = () => { hSnd.currentTime = 0; hSnd.play(); };
-            el.onmousedown = () => { cSnd.currentTime = 0; cSnd.play(); };
-        });
-    }
-
     function showView(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        setTimeout(attachListeners, 100);
     }
-
-    function toggleFS() {
-        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-        else document.exitFullscreen();
-    }
-
-    function clearCache() { if(confirm("Clear session?")) { localStorage.clear(); location.reload(); } }
 
     function navGrades(type) {
         const container = document.getElementById('grade-btns'); container.innerHTML = '';
@@ -260,20 +202,17 @@
         for(let i=1; i<=num; i++) {
             const cid = `${studio.grade}0${i}`;
             area.innerHTML += `<div style="background:white; padding:10px; margin-bottom:8px; border-radius:12px; border:1px solid #ddd;">
-                <strong>Class ${cid}</strong><br>
+                <strong>Class ${cid} Name List (.txt)</strong><br>
                 <input type="file" id="names-${cid}" class="input-box" style="margin-top:5px;" accept=".txt">
             </div>`;
         }
     }
 
     async function startSession() {
-        studio.pool = []; studio.classNames = {};
-        studio.settings = {
-            words: { mode: document.getElementById('mode-words').value, qty: parseInt(document.getElementById('qty-words').value) || 0 },
-            sentences: { mode: document.getElementById('mode-sentences').value, qty: parseInt(document.getElementById('qty-sentences').value) || 0 },
-            phonics: { mode: document.getElementById('mode-phonics').value, qty: parseInt(document.getElementById('qty-phonics').value) || 0 }
-        };
-        await loadSet('up-words'); await loadSet('up-sentences'); await loadSet('up-phonics');
+        const poolFile = document.getElementById('up-pool').files[0];
+        if(!poolFile) return alert("Please upload your word list TXT file!");
+        studio.pool = (await poolFile.text()).split('\n').map(l => l.trim()).filter(l => l);
+
         const num = document.getElementById('num-classes').value;
         const nav = document.getElementById('class-nav'); nav.innerHTML = '';
         for(let i=1; i<=num; i++) {
@@ -288,13 +227,6 @@
         renderGrid(); showView('view-grid');
     }
 
-    async function loadSet(fId) {
-        const f = document.getElementById(fId).files[0];
-        if(!f) return;
-        let lines = (await f.text()).split('\n').filter(l => l.trim());
-        studio.pool.push(...lines);
-    }
-
     function renderGrid() {
         const cid = document.getElementById('class-nav').value;
         document.getElementById('display-cid').innerText = "Class " + cid;
@@ -302,22 +234,17 @@
         const names = studio.classNames[cid] || [];
         for(let i=1; i<=30; i++) {
             const s = document.createElement('div');
-            const studentName = names[i-1] || "";
+            const sName = names[i-1] || "";
             s.className = 'seat'; s.id = 'seat-'+i;
-            s.innerHTML = `${i}<br><span style="font-size:0.8rem; color:#888;">${studentName}</span>`;
-            s.onclick = () => { window.activeS = i; activeStudentName = studentName; openBooth(); };
+            s.innerHTML = `${i}<br><span style="font-size:0.8rem; color:#888;">${sName}</span>`;
+            s.onclick = () => { window.activeS = i; activeStudentName = sName; openBooth(); };
             grid.appendChild(s);
         }
-        setTimeout(attachListeners, 100);
     }
 
-    // --- 3. RECORDER LOGIC ---
     function openBooth() {
         document.getElementById('student-name-display').innerText = activeStudentName ? `${window.activeS}. ${activeStudentName}` : `Student ${window.activeS}`;
-        
-        let total = (studio.settings.words.qty || 0) + (studio.settings.sentences.qty || 0) + (studio.settings.phonics.qty || 0);
-        currentStudentPrompts = total > 0 ? [...studio.pool].sort(() => 0.5 - Math.random()).slice(0, total) : [...studio.pool];
-        
+        currentStudentPrompts = [...studio.pool].sort(() => 0.5 - Math.random()).slice(0, 3); // 3 items per session
         currentPromptIndex = 0; sessionScores = []; sessionAudioChunks = [];
         resetBoothUI();
         showView('view-recorder');
@@ -331,7 +258,6 @@
         document.getElementById('next-btn').classList.add('hidden');
         document.getElementById('mic-btn').classList.remove('hidden');
         document.getElementById('mic-btn').innerText = "🎤 Record";
-        document.getElementById('mic-btn').className = "btn btn-green";
     }
 
     async function toggleMic() {
@@ -344,33 +270,22 @@
             mediaRec.ondataavailable = e => chunks.push(e.data);
             mediaRec.start(); 
             if(recognition) recognition.start();
-            isRec = true; 
-            btn.innerText = "✅ Done"; btn.className = "btn btn-pink";
+            isRec = true; btn.innerText = "✅ Done";
         } else {
-            mediaRec.stop(); 
-            isRec = false; 
-            setTimeout(showScore, 200);
-        }
-    }
-
-    function showScore() {
-        const scoreDisplay = document.getElementById('rating-display');
-        scoreDisplay.innerText = "Score: " + latestScore + "/10";
-        scoreDisplay.classList.remove('hidden');
-        document.getElementById('mic-btn').classList.add('hidden');
-        document.getElementById('next-btn').classList.remove('hidden');
-        
-        if (currentPromptIndex === currentStudentPrompts.length - 1) {
-            document.getElementById('next-btn').innerText = "💾 Finish & Save";
-        } else {
-            document.getElementById('next-btn').innerText = "Next Word ➔";
+            mediaRec.stop(); isRec = false;
+            setTimeout(() => {
+                document.getElementById('rating-display').innerText = "Score: " + latestScore + "/10";
+                document.getElementById('rating-display').classList.remove('hidden');
+                btn.classList.add('hidden');
+                document.getElementById('next-btn').classList.remove('hidden');
+                document.getElementById('next-btn').innerText = (currentPromptIndex === currentStudentPrompts.length - 1) ? "💾 Save Session" : "Next Word ➔";
+            }, 300);
         }
     }
 
     function handleNext() {
         sessionScores.push(latestScore);
         sessionAudioChunks.push(...chunks);
-        
         if (currentPromptIndex < currentStudentPrompts.length - 1) {
             currentPromptIndex++;
             resetBoothUI();
@@ -380,7 +295,7 @@
     }
 
     async function uploadFinalSession() {
-        document.getElementById('status-msg').innerText = "Saving to Drive & Gradebook...";
+        document.getElementById('status-msg').innerText = "Saving to Google Drive...";
         document.getElementById('next-btn').classList.add('hidden');
         
         const blob = new Blob(sessionAudioChunks, { type: 'audio/webm' });
@@ -391,22 +306,19 @@
             const safeName = activeStudentName.replace(/[^a-z0-9]/gi, '_') || "Student";
             const scoreStr = sessionScores.join('-');
             const fname = `${window.activeS.toString().padStart(2, '0')}_${safeName}(${scoreStr}).webm`;
-            const currentClass = document.getElementById('class-nav').value;
-            
             const folderIdMatch = studio.driveLink.match(/[-\w]{25,}/);
-            const folderId = folderIdMatch ? folderIdMatch[0] : "";
 
-            const params = new URLSearchParams({ 
-                audio: base64, 
-                filename: fname, 
-                className: currentClass,
-                folderId: folderId,
+            const payload = {
+                audio: base64,
+                filename: fname,
+                className: document.getElementById('class-nav').value,
+                folderId: folderIdMatch ? folderIdMatch[0] : "",
                 studentName: activeStudentName,
                 scores: scoreStr
-            });
+            };
 
             try {
-                await fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' });
+                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
                 document.getElementById('status-msg').innerText = "Saved Successfully!";
                 document.getElementById('seat-'+window.activeS).classList.add('done');
                 setTimeout(() => showView('view-grid'), 1500);
@@ -416,7 +328,9 @@
             }
         };
     }
-    attachListeners();
+
+    function toggleFS() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+    function clearCache() { if(confirm("Clear everything?")) { localStorage.clear(); location.reload(); } }
 </script>
 </body>
 </html>
