@@ -17,7 +17,6 @@
             --neon-green: #a9cc9e;
         }
 
-        /* 1. BACKGROUND IMAGE ADDED */
         body { 
             font-family: 'Fredoka', 'Comic Sans MS', sans-serif; 
             background: url('bg.png') no-repeat center center fixed; 
@@ -49,7 +48,6 @@
             margin-top: 20px; backdrop-filter: blur(8px);
         }
 
-        /* 2. NEON EFFECT ADDED TO BUTTONS */
         .btn { 
             padding: 20px 30px; border: 3px solid transparent; border-radius: 25px; font-size: 1.3rem; 
             font-weight: 600; cursor: pointer; background: var(--primary); color: white; 
@@ -76,14 +74,16 @@
         }
         .seat.done { background: #8fb376 !important; color: white !important; border-color: #6d8a57 !important; box-shadow: 0 0 15px var(--neon-green); }
 
-        #word-display { font-size: 4.5rem; color: var(--secondary); text-align: center; margin: 35px 0; font-variant: small-caps; font-weight: 600; text-shadow: 2px 2px 0 white; }
-        #rating-display { font-size: 3rem; font-weight: 600; color: var(--deep-brown); margin: 10px 0; }
+        #word-display { font-size: 4.5rem; color: var(--secondary); text-align: center; margin: 25px 0; font-variant: small-caps; font-weight: 600; text-shadow: 2px 2px 0 white; }
+        #rating-display { font-size: 3.5rem; font-weight: 600; color: var(--deep-brown); margin: 10px 0; }
 
         footer {
             margin-top: auto; padding: 20px; text-align: center; width: 100%;
             background: var(--paper-white); border-top: 3px solid var(--primary);
             font-weight: 600; font-size: 0.9rem;
         }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -113,18 +113,15 @@
     <div id="view-config" class="screen">
         <div class="card">
             <h2 style="color: var(--primary)">Studio Setup</h2>
-            
             <div class="config-section">
                 <h3>Storage Destination</h3>
                 <input type="text" id="drive-link" class="input-box" placeholder="Paste Google Drive Folder Link Here..." onchange="saveDriveLink()">
             </div>
-
             <div class="config-section">
                 <h3>Classes</h3>
                 <input type="number" id="num-classes" class="input-box" value="3" onchange="buildClassInputs()">
                 <div id="class-entry-area" style="margin-top:10px;"></div>
             </div>
-
             <div class="config-section">
                 <h3>Materials</h3>
                 <div class="config-row">
@@ -159,10 +156,12 @@
             <div id="status-msg" style="font-weight:bold; color:var(--accent);">Ready</div>
             <h2 id="student-name-display" style="color: var(--primary);">Student</h2>
             <div id="word-display">...</div>
-            <div id="rating-display">Score: --/10</div>
-            <div style="display:flex; gap:15px;">
-                <button id="mic-btn" class="btn btn-green" style="flex:2" onclick="toggleMic()">🎤 Record</button>
-                <button class="btn btn-pink" style="flex:1" onclick="showView('view-grid')">Back</button>
+            <div id="rating-display" class="hidden">Score: --/10</div>
+            
+            <div style="display:flex; gap:15px; flex-direction: column;">
+                <button id="mic-btn" class="btn btn-green" onclick="toggleMic()">🎤 Record</button>
+                <button id="next-btn" class="btn btn-pink hidden" onclick="handleNext()">Next Word ➔</button>
+                <button id="back-btn" class="btn" style="background:#888; box-shadow:0 8px 0 #555" onclick="showView('view-grid')">Back to Grid</button>
             </div>
         </div>
     </div>
@@ -173,7 +172,8 @@
     </footer>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzDjH_FAQskw8H72foVbYRtBWqvyrTccwAng4iAwfe3bpJccJF6CcMho3vQsVj5wEKW/exec";
+    // --- 1. CONFIGURATION ---
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz-bXXpBFCkhmXJC1bZCAoNPDGxZkZdb_rsZwTTQ9xOuosKjbQ_APKrg4NTWa9AuQOz/exec";
     
     const hSnd = document.getElementById('snd-hover');
     const cSnd = document.getElementById('snd-click');
@@ -183,6 +183,7 @@
     let activeStudentName = "", currentPromptIndex = 0, currentStudentPrompts = [];
     let sessionScores = [], sessionAudioChunks = [];
 
+    // --- 2. SPEECH RECOGNITION SETUP ---
     if ('webkitSpeechRecognition' in window) {
         recognition = new webkitSpeechRecognition();
         recognition.continuous = false;
@@ -194,25 +195,17 @@
             const target = currentStudentPrompts[currentPromptIndex].toLowerCase().trim();
             const confidence = e.results[0][0].confidence;
 
-            if (transcript === target) {
-                latestScore = 10;
-            } else if (transcript.includes(target) || target.includes(transcript)) {
-                latestScore = 8;
-            } else {
-                latestScore = Math.min(6, Math.max(1, Math.ceil(confidence * 10)));
-            }
-
-            document.getElementById('rating-display').innerText = "Score: " + latestScore + "/10";
+            if (transcript === target) latestScore = 10;
+            else if (transcript.includes(target) || target.includes(transcript)) latestScore = 8;
+            else latestScore = Math.min(6, Math.max(1, Math.ceil(confidence * 10)));
+            
             document.getElementById('status-msg').innerText = `Heard: "${transcript}"`;
         };
     }
 
     window.onload = () => {
         const savedLink = localStorage.getItem('wynn_drive_link');
-        if(savedLink) {
-            document.getElementById('drive-link').value = savedLink;
-            studio.driveLink = savedLink;
-        }
+        if(savedLink) { document.getElementById('drive-link').value = savedLink; studio.driveLink = savedLink; }
     };
 
     function saveDriveLink() {
@@ -280,11 +273,7 @@
             sentences: { mode: document.getElementById('mode-sentences').value, qty: parseInt(document.getElementById('qty-sentences').value) || 0 },
             phonics: { mode: document.getElementById('mode-phonics').value, qty: parseInt(document.getElementById('qty-phonics').value) || 0 }
         };
-
-        await loadSet('up-words');
-        await loadSet('up-sentences');
-        await loadSet('up-phonics');
-        
+        await loadSet('up-words'); await loadSet('up-sentences'); await loadSet('up-phonics');
         const num = document.getElementById('num-classes').value;
         const nav = document.getElementById('class-nav'); nav.innerHTML = '';
         for(let i=1; i<=num; i++) {
@@ -322,35 +311,27 @@
         setTimeout(attachListeners, 100);
     }
 
+    // --- 3. RECORDER LOGIC ---
     function openBooth() {
-        const displayName = activeStudentName ? `${window.activeS}. ${activeStudentName}` : `Student ${window.activeS}`;
-        document.getElementById('student-name-display').innerText = displayName;
+        document.getElementById('student-name-display').innerText = activeStudentName ? `${window.activeS}. ${activeStudentName}` : `Student ${window.activeS}`;
         
-        let studentPool = [];
-        const totalRandom = (studio.settings.words.qty || 0) + (studio.settings.sentences.qty || 0) + (studio.settings.phonics.qty || 0);
+        let total = (studio.settings.words.qty || 0) + (studio.settings.sentences.qty || 0) + (studio.settings.phonics.qty || 0);
+        currentStudentPrompts = total > 0 ? [...studio.pool].sort(() => 0.5 - Math.random()).slice(0, total) : [...studio.pool];
         
-        if (totalRandom > 0) {
-            studentPool = [...studio.pool].sort(() => 0.5 - Math.random()).slice(0, totalRandom);
-        } else {
-            studentPool = [...studio.pool];
-        }
-
-        currentStudentPrompts = studentPool;
-        currentPromptIndex = 0;
-        sessionScores = [];
-        sessionAudioChunks = [];
-        latestScore = 0;
-        updatePromptDisplay();
-        document.getElementById('rating-display').innerText = "Score: --/10";
+        currentPromptIndex = 0; sessionScores = []; sessionAudioChunks = [];
+        resetBoothUI();
         showView('view-recorder');
     }
 
-    function updatePromptDisplay() {
-        const display = document.getElementById('word-display');
-        if (currentStudentPrompts.length > 0) {
-            display.innerText = currentStudentPrompts[currentPromptIndex];
-            document.getElementById('status-msg').innerText = `Item ${currentPromptIndex + 1} of ${currentStudentPrompts.length}`;
-        }
+    function resetBoothUI() {
+        latestScore = 0;
+        document.getElementById('word-display').innerText = currentStudentPrompts[currentPromptIndex];
+        document.getElementById('status-msg').innerText = `Item ${currentPromptIndex + 1} of ${currentStudentPrompts.length}`;
+        document.getElementById('rating-display').classList.add('hidden');
+        document.getElementById('next-btn').classList.add('hidden');
+        document.getElementById('mic-btn').classList.remove('hidden');
+        document.getElementById('mic-btn').innerText = "🎤 Record";
+        document.getElementById('mic-btn').className = "btn btn-green";
     }
 
     async function toggleMic() {
@@ -361,52 +342,78 @@
             mediaRec = new MediaRecorder(stream);
             chunks = []; 
             mediaRec.ondataavailable = e => chunks.push(e.data);
-            mediaRec.onstop = handleItemEnd; 
             mediaRec.start(); 
-            recognition.start();
+            if(recognition) recognition.start();
             isRec = true; 
-            btn.innerText = "🛑 Stop"; btn.className = "btn btn-pink";
+            btn.innerText = "✅ Done"; btn.className = "btn btn-pink";
         } else {
             mediaRec.stop(); 
             isRec = false; 
-            btn.innerText = "🎤 Record"; btn.className = "btn btn-green";
+            setTimeout(showScore, 200);
         }
     }
 
-    async function handleItemEnd() {
+    function showScore() {
+        const scoreDisplay = document.getElementById('rating-display');
+        scoreDisplay.innerText = "Score: " + latestScore + "/10";
+        scoreDisplay.classList.remove('hidden');
+        document.getElementById('mic-btn').classList.add('hidden');
+        document.getElementById('next-btn').classList.remove('hidden');
+        
+        if (currentPromptIndex === currentStudentPrompts.length - 1) {
+            document.getElementById('next-btn').innerText = "💾 Finish & Save";
+        } else {
+            document.getElementById('next-btn').innerText = "Next Word ➔";
+        }
+    }
+
+    function handleNext() {
         sessionScores.push(latestScore);
         sessionAudioChunks.push(...chunks);
         
         if (currentPromptIndex < currentStudentPrompts.length - 1) {
             currentPromptIndex++;
-            updatePromptDisplay();
-            document.getElementById('rating-display').innerText = "Score: --/10";
+            resetBoothUI();
         } else {
-            await uploadFinalSession();
+            uploadFinalSession();
         }
     }
 
     async function uploadFinalSession() {
-        document.getElementById('status-msg').innerText = "Saving to Drive...";
+        document.getElementById('status-msg').innerText = "Saving to Drive & Gradebook...";
+        document.getElementById('next-btn').classList.add('hidden');
+        
         const blob = new Blob(sessionAudioChunks, { type: 'audio/webm' });
         const reader = new FileReader();
         reader.readAsDataURL(blob);
         reader.onloadend = async () => {
             const base64 = reader.result.split(',')[1];
             const safeName = activeStudentName.replace(/[^a-z0-9]/gi, '_') || "Student";
-            const scoreFormatted = `(${sessionScores.join('-')})`;
-            const num = window.activeS.toString().padStart(2, '0');
-            const fname = `${num}_${safeName}${scoreFormatted}.webm`;
+            const scoreStr = sessionScores.join('-');
+            const fname = `${window.activeS.toString().padStart(2, '0')}_${safeName}(${scoreStr}).webm`;
+            const currentClass = document.getElementById('class-nav').value;
             
-            const params = new URLSearchParams({
+            const folderIdMatch = studio.driveLink.match(/[-\w]{25,}/);
+            const folderId = folderIdMatch ? folderIdMatch[0] : "";
+
+            const params = new URLSearchParams({ 
                 audio: base64, 
-                filename: fname,
-                driveLink: studio.driveLink
+                filename: fname, 
+                className: currentClass,
+                folderId: folderId,
+                studentName: activeStudentName,
+                scores: scoreStr
             });
-            
-            await fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' });
-            document.getElementById('seat-'+window.activeS).classList.add('done');
-            showView('view-grid');
+
+            try {
+                await fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' });
+                document.getElementById('status-msg').innerText = "Saved Successfully!";
+                document.getElementById('seat-'+window.activeS).classList.add('done');
+                setTimeout(() => showView('view-grid'), 1500);
+            } catch (err) {
+                document.getElementById('status-msg').innerText = "Upload Error!";
+                document.getElementById('next-btn').classList.remove('hidden');
+            }
         };
     }
     attachListeners();
