@@ -2,363 +2,295 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Wynn's English Recording Studio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wynn's Studio Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <style>
         :root { 
-            --bg-green: #7a9e60;
-            --sun-orange: #e2a87a;
-            --deep-brown: #665040;
-            --paper-white: rgba(252, 251, 242, 0.96);
-            --primary: var(--bg-green);
-            --secondary: var(--sun-orange);
-            --accent: #a48c7e;
-            --neon-green: #a9cc9e;
+            --p: #6c5ce7; --bg: #f0f3f9; --s: #00b894; --e: #ff7675; --glass: rgba(255, 255, 255, 0.9);
         }
-
+        
         body { 
-            font-family: 'Fredoka', 'Comic Sans MS', sans-serif; 
-            background: url('bg.png') no-repeat center center fixed; 
-            background-size: cover; margin: 0; display: flex; 
-            flex-direction: column; align-items: center; min-height: 100vh;
-            color: var(--deep-brown);
+            font-family: 'Fredoka', "Comic Sans MS", cursive; 
+            background: #dfe6e9; 
+            margin: 0; text-transform: none; 
+            overflow: hidden; color: #2d3436;
         }
 
-        .widget-bar { position: fixed; top: 15px; right: 15px; display: flex; gap: 12px; z-index: 1000; }
-        .widget-btn {
-            background: white; border: 3px solid var(--primary); border-radius: 50%;
-            width: 50px; height: 50px; cursor: pointer; display: flex;
-            align-items: center; justify-content: center; font-size: 1.3rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s;
+        .app { 
+            width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2)), url('bg.jpg') center/cover;
+            position: relative;
         }
 
-        .studio-title { 
-            font-size: 3.2rem; color: white; text-shadow: 4px 4px 0 var(--deep-brown); 
-            text-align: center; margin-top: 50px; font-variant: small-caps;
+        .view { 
+            width: 96%; height: 94%; background: var(--glass); 
+            backdrop-filter: blur(20px); border-radius: 50px; 
+            box-shadow: 0 25px 80px rgba(0,0,0,0.1); 
+            display: none; flex-direction: column; position: relative;
+            border: 2px solid rgba(255,255,255,0.5); z-index: 1;
         }
 
-        .screen { display: none; width: 95%; max-width: 900px; padding: 20px; box-sizing: border-box; animation: fadeIn 0.4s ease; }
-        .active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-
-        .card { 
-            background: var(--paper-white); border-radius: 45px; padding: 35px; 
-            border: 5px solid var(--accent); box-shadow: 0 20px 45px rgba(0,0,0,0.1);
-            margin-top: 20px; backdrop-filter: blur(8px);
+        #lobby { 
+            display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr);
+            gap: 25px; padding: 120px 60px 60px 60px; box-sizing: border-box;
         }
 
-        .btn { 
-            padding: 20px 30px; border: 3px solid transparent; border-radius: 25px; font-size: 1.3rem; 
-            font-weight: 600; cursor: pointer; background: var(--primary); color: white; 
-            box-shadow: 0 8px 0 #5a7a48; margin: 12px 0; width: 100%; font-variant: small-caps; 
-            transition: all 0.2s ease;
+        .grade-pill { 
+            background: white; border-radius: 40px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
+            cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; border: 4px solid transparent;
         }
-        .btn:hover { border-color: #fff; box-shadow: 0 0 20px var(--neon-green); transform: scale(1.02); }
-        .btn-pink { background: var(--secondary); box-shadow: 0 8px 0 #b88661; }
-        .btn-green { background: #8fb376; box-shadow: 0 8px 0 #6d8a57; }
+        .grade-pill:hover { transform: translateY(-5px); border-color: var(--p); }
+        .grade-pill h2 { font-size: 2.5rem; margin: 0; color: var(--p); }
 
-        .config-section { background: rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 20px; margin: 15px 0; border: 2px dashed var(--accent); }
-        .config-row { display: grid; grid-template-columns: 2fr 1.5fr 100px; gap: 15px; align-items: center; margin-bottom: 12px; }
-        .input-box { padding: 10px; border-radius: 12px; border: 2px solid #ccc; width: 100%; font-family: inherit; font-size: 1rem; box-sizing: border-box; }
-        .input-box:disabled { background: #eee; cursor: not-allowed; opacity: 0.5; }
+        .navbar { padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; }
+        .grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; padding: 0 50px 50px; overflow-y: auto; }
 
-        .seat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; margin-top: 25px; }
         .seat { 
-            background: white; border-radius: 20px; padding: 25px 10px; 
-            text-align: center; border: 4px solid #eee; cursor: pointer; 
-            font-weight: bold; font-size: 1.2rem; transition: 0.3s;
+            background: white; border-radius: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            font-size: 1.1rem; font-weight: 700; min-height: 120px; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
-        .seat.done { background: #8fb376; color: white; border-color: #8fb376; }
+        .seat.done { background: var(--s); color: white; }
+        .seat span.s-num { font-size: 2rem; color: #b2bec3; }
+        .seat.done span.s-num { color: white; }
 
-        #word-display { font-size: 4.5rem; color: var(--secondary); text-align: center; margin: 35px 0; font-variant: small-caps; font-weight: 600; text-shadow: 2px 2px 0 white; }
-        #rating-display { font-size: 3rem; font-weight: 600; color: var(--deep-brown); margin: 10px 0; }
+        .input-f { background: #f8faff; padding: 12px; border-radius: 15px; border: 2px solid #edf2f7; font-family: inherit; outline: none; width: 100%; box-sizing: border-box; }
+        .btn { width: 100%; padding: 18px; border-radius: 30px; border: none; font-size: 1.5rem; font-weight: 700; color: white; cursor: pointer; transition: 0.2s; }
+        
+        #modal, #configModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-c { background: white; width: 90%; max-width: 800px; padding: 40px; border-radius: 50px; box-shadow: 0 30px 60px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
 
-        footer {
-            margin-top: auto; padding: 20px; text-align: center; width: 100%;
-            background: var(--paper-white); border-top: 3px solid var(--primary);
-            font-weight: 600; font-size: 0.9rem;
+        #wordBox { font-size: 4rem; color: var(--e); margin: 20px 0; font-weight: 700; min-height: 150px; display: flex; align-items: center; justify-content: center; text-align: center; }
+        
+        .ai-rating-badge {
+            background: #f0f3f9; padding: 15px; border-radius: 20px; border: 2px dashed var(--p);
+            margin-top: 15px; font-weight: 700; font-size: 1.2rem; display: none;
         }
+
+        .watermark { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: 600; color: var(--p); z-index: 100; opacity: 0.7; }
     </style>
 </head>
 <body>
 
-    <div class="widget-bar">
-        <button class="widget-btn" onclick="toggleFS()">📺</button>
-        <button class="widget-btn" onclick="clearCache()">🧹</button>
+<div class="app">
+    <div id="lobby" class="view" style="display: grid;">
+        <h1 style="position:absolute; top:30px; left:50%; transform:translateX(-50%); color:var(--p);">Teacher Wynn's Recording Studio</h1>
+        <div class="grade-pill" onclick="promptConfig(1)"><h2>Grade 1</h2></div>
+        <div class="grade-pill" onclick="promptConfig(2)"><h2>Grade 2</h2></div>
+        <div class="grade-pill" onclick="promptConfig(3)"><h2>Grade 3</h2></div>
+        <div class="grade-pill" onclick="promptConfig(4)"><h2>Grade 4</h2></div>
+        <div class="grade-pill" onclick="promptConfig(5)"><h2>Grade 5</h2></div>
+        <div class="grade-pill" onclick="promptConfig(6)"><h2>Grade 6</h2></div>
     </div>
 
-    <audio id="snd-hover" src="hover.mp3" preload="auto"></audio>
-    <audio id="snd-click" src="click.mp3" preload="auto"></audio>
-
-    <div id="view-start" class="screen active">
-        <h1 class="studio-title">Teacher Wynn's Recording Studio</h1>
-        <div class="card">
-            <button class="btn" onclick="navGrades('Elementary')">Elementary School</button>
-            <button class="btn btn-pink" onclick="navGrades('Junior High')">Junior High School</button>
-        </div>
-    </div>
-
-    <div id="view-grades" class="screen">
-        <h2 style="text-align:center;">Select Grade</h2>
-        <div id="grade-btns" class="card" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px;"></div>
-        <button class="btn" style="background:#888; box-shadow:0 8px 0 #555" onclick="showView('view-start')">Back</button>
-    </div>
-
-    <div id="view-config" class="screen">
-        <div class="card">
-            <h2 style="color: var(--primary)">Studio Setup</h2>
-            <div class="config-section">
-                <h3>Classes</h3>
-                <input type="number" id="num-classes" class="input-box" value="3" onchange="buildClassInputs()">
-                <div id="class-entry-area" style="margin-top:10px;"></div>
+    <div id="main" class="view">
+        <div class="navbar">
+            <button onclick="location.reload()" style="border:none; background:none; cursor:pointer;"><i data-lucide="arrow-left-circle" color="#6c5ce7" size="40"></i></button>
+            <div style="display:flex; gap:20px; align-items:center;">
+                <span id="gLabel" style="font-size:1.5rem; font-weight:700;"></span>
+                <select id="classSel" class="input-f" style="width:auto;" onchange="renderClassGrid()"></select>
             </div>
-            <div class="config-section">
-                <h3>Materials</h3>
-                <div class="config-row">
-                    <div><strong>Words:</strong><br><input type="file" id="up-words"></div>
-                    <select id="mode-words" class="input-box" onchange="toggleQty('mode-words', 'qty-words')"><option value="rnd">Random</option><option value="all">All</option></select>
-                    <input type="number" id="qty-words" class="input-box" placeholder="Qty">
-                </div>
-                <div class="config-row">
-                    <div><strong>Sentences:</strong><br><input type="file" id="up-sentences"></div>
-                    <select id="mode-sentences" class="input-box" onchange="toggleQty('mode-sentences', 'qty-sentences')"><option value="rnd">Random</option><option value="all">All</option></select>
-                    <input type="number" id="qty-sentences" class="input-box" placeholder="Qty">
-                </div>
-                <div class="config-row">
-                    <div><strong>Phonics:</strong><br><input type="file" id="up-phonics"></div>
-                    <select id="mode-phonics" class="input-box" onchange="toggleQty('mode-phonics', 'qty-phonics')"><option value="rnd">Random</option><option value="all">All</option></select>
-                    <input type="number" id="qty-phonics" class="input-box" placeholder="Qty">
-                </div>
-            </div>
-            <button class="btn btn-green" onclick="startSession()">Open Studio 🚀</button>
+            <div style="width:40px;"></div>
         </div>
+        <div class="grid" id="seatGrid"></div>
     </div>
 
-    <div id="view-grid" class="screen">
-        <h2 id="display-cid" style="font-size: 2.5rem; color:var(--primary); text-shadow: 2px 2px 0 white;">Class</h2>
-        <select id="class-nav" class="input-box" style="width: auto; min-width: 180px;" onchange="renderGrid()"></select>
-        <div id="main-grid" class="seat-grid"></div>
-        <button class="btn" style="background:#888; box-shadow:0 8px 0 #555; margin-top:30px;" onclick="showView('view-config')">Settings</button>
-    </div>
+    <div class="watermark">Designed by Teacher Bridgette Wynn • Taichung City</div>
+</div>
 
-    <div id="view-recorder" class="screen">
-        <div class="card" style="text-align: center;">
-            <div id="status-msg" style="font-weight:bold; color:var(--accent);">Ready</div>
-            <h2 id="student-name-display" style="color: var(--primary);">Student</h2>
-            <div id="word-display">...</div>
-            <div id="rating-display">Score: --/10</div>
-            <div style="display:flex; gap:15px;">
-                <button id="mic-btn" class="btn btn-green" style="flex:2" onclick="toggleMic()">🎤 Record</button>
-                <button class="btn btn-pink" style="flex:1" onclick="showView('view-grid')">Back</button>
-            </div>
+<div id="configModal">
+    <div class="modal-c">
+        <h2 style="text-align:center; color:var(--p);">Grade <span id="confG"></span> Setup</h2>
+        
+        <div style="border: 2px dashed #ddd; padding: 20px; border-radius: 25px; margin-bottom: 20px;">
+            <label style="font-weight:700;">Classes</label>
+            <input type="number" id="classCount" class="input-f" value="3" oninput="generateClassInputs()" style="margin: 10px 0;">
+            <div id="classFilesContainer" style="display:flex; flex-direction:column; gap:10px;"></div>
         </div>
-    </div>
 
-    <footer>
-        Teacher Wynn is a Filipina English teacher working under the<br>
-        Taiwan Foreign English Teacher Program (TFETP).
-    </footer>
+        <div style="border: 2px dashed #ddd; padding: 20px; border-radius: 25px;">
+            <label style="font-weight:700;">Materials</label>
+            <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+                <input type="file" id="wordsFile" class="input-f" style="flex:1;">
+                <select id="wordMode" class="input-f" style="width:auto;"><option value="random">Random</option><option value="seq">Sequential</option></select>
+                <input type="number" id="wordQty" class="input-f" placeholder="Qty" style="width:70px;" value="1">
+            </div>
+            <small style="color:gray;">Upload Excel for Words/Sentences</small>
+        </div>
+
+        <button class="btn" style="background:var(--s); margin-top:20px;" onclick="confirmConfig()">Open Studio 🚀</button>
+    </div>
+</div>
+
+<div id="modal">
+    <div class="modal-c" style="text-align:center;">
+        <h2 id="sLabel" style="opacity:0.5;">Student Name</h2>
+        <div id="wordBox">Ready?</div>
+        <div id="aiRating" class="ai-rating-badge"></div>
+        
+        <button id="startBtn" class="btn" style="background:var(--s);" onclick="startRec()">Start Recording</button>
+        
+        <div id="recControls" style="display:none;">
+            <button id="stopBtn" class="btn" style="background:var(--e);" onclick="stopRec()">Stop & Save</button>
+        </div>
+        
+        <button id="closeBtn" onclick="closeModal()" style="margin-top:20px; border:none; background:none; color:#b2bec3; cursor:pointer;">Cancel</button>
+    </div>
+</div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2Lkc9e5EqGB_6vU5JWPw4vB2mBp_VQsEsOLrwL2RSj21PWOo9qPEJ4r0L4M0wn6AB/exec";
-    const hSnd = document.getElementById('snd-hover');
-    const cSnd = document.getElementById('snd-click');
-    let studio = { grade: '', pool: [], classNames: {}, settings: {} };
-    let isRec = false, mediaRec, chunks = [], recognition, latestScore = "0/10", activeStudentName = "", currentPromptIndex = 0, currentStudentPrompts = [];
+    let activeG, curSeat, curEl, recorder, stream, chunks = [];
+    let classData = {}; // Stores names per class
+    let vocabulary = []; // Combined list from Excel
+    
+    // AI Speech Engine
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    let lastTranscript = "";
 
-    function playClick() { cSnd.currentTime = 0; cSnd.play(); }
-    function playHover() { hSnd.currentTime = 0; hSnd.play(); }
+    lucide.createIcons();
 
-    function toggleQty(selectId, qtyId) {
-        const sel = document.getElementById(selectId);
-        const qty = document.getElementById(qtyId);
-        qty.disabled = (sel.value === 'all');
-        if(qty.disabled) qty.value = '';
+    function promptConfig(g) {
+        activeG = g;
+        document.getElementById('confG').innerText = g;
+        document.getElementById('configModal').style.display = 'flex';
+        generateClassInputs();
     }
 
-    function attachListeners() {
-        document.querySelectorAll('.btn, .seat, .widget-btn').forEach(el => {
-            el.onmouseenter = playHover; el.onmousedown = playClick;
-        });
-    }
-
-    function showView(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        setTimeout(attachListeners, 100);
-    }
-
-    function toggleFS() {
-        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-        else document.exitFullscreen();
-    }
-
-    function clearCache() { if(confirm("Clear session?")) { localStorage.clear(); location.reload(); } }
-
-    function navGrades(type) {
-        const container = document.getElementById('grade-btns'); container.innerHTML = '';
-        const grades = type === 'Elementary' ? [1,2,3,4,5,6] : [7,8,9];
-        grades.forEach(g => {
-            const b = document.createElement('button');
-            b.className = 'btn'; b.innerText = 'Grade ' + g;
-            b.onclick = () => { studio.grade = g; buildConfig(); };
-            container.appendChild(b);
-        });
-        showView('view-grades');
-    }
-
-    function buildConfig() { buildClassInputs(); showView('view-config'); }
-
-    function buildClassInputs() {
-        const num = document.getElementById('num-classes').value;
-        const area = document.getElementById('class-entry-area'); area.innerHTML = '';
-        for(let i=1; i<=num; i++) {
-            const cid = `${studio.grade}0${i}`;
-            area.innerHTML += `<div style="background:white; padding:10px; margin-bottom:8px; border-radius:12px; border:1px solid #ddd;">
-                <strong>Class ${cid}</strong><br>
-                <input type="file" id="names-${cid}" class="input-box" style="margin-top:5px;" accept=".txt">
-            </div>`;
+    function generateClassInputs() {
+        const container = document.getElementById('classFilesContainer');
+        const count = document.getElementById('classCount').value;
+        container.innerHTML = '';
+        for(let i=1; i<=count; i++) {
+            const cName = activeG + (i < 10 ? '0'+i : i);
+            container.innerHTML += `
+                <div style="background:#f8faff; padding:10px; border-radius:15px; display:flex; align-items:center; gap:10px;">
+                    <span style="font-weight:700; min-width:80px;">Class ${cName}</span>
+                    <input type="file" class="name-input" data-class="${cName}" style="font-size:0.8rem;">
+                </div>`;
         }
     }
 
-    async function startSession() {
-        studio.pool = []; studio.classNames = {};
-        studio.settings = {
-            words: { mode: document.getElementById('mode-words').value, qty: parseInt(document.getElementById('qty-words').value) || 0 },
-            sentences: { mode: document.getElementById('mode-sentences').value, qty: parseInt(document.getElementById('qty-sentences').value) || 0 },
-            phonics: { mode: document.getElementById('mode-phonics').value, qty: parseInt(document.getElementById('qty-phonics').value) || 0 }
-        };
-
-        await loadSet('up-words', studio.settings.words);
-        await loadSet('up-sentences', studio.settings.sentences);
-        await loadSet('up-phonics', studio.settings.phonics);
-        
-        const num = document.getElementById('num-classes').value;
-        const nav = document.getElementById('class-nav'); nav.innerHTML = '';
-        for(let i=1; i<=num; i++) {
-            const cid = `${studio.grade}0${i}`;
-            nav.innerHTML += `<option value="${cid}">Class ${cid}</option>`;
-            const f = document.getElementById('names-'+cid).files[0];
-            if(f) {
-                const text = await f.text();
-                studio.classNames[cid] = text.split('\n').map(n => n.trim()).filter(n => n);
+    async function confirmConfig() {
+        // 1. Process Names
+        const fileInputs = document.querySelectorAll('.name-input');
+        for (let input of fileInputs) {
+            if (input.files[0]) {
+                const names = await parseExcel(input.files[0]);
+                classData[input.getAttribute('data-class')] = names;
             }
         }
-        renderGrid(); showView('view-grid');
+
+        // 2. Process Words
+        const wFile = document.getElementById('wordsFile').files[0];
+        if (wFile) vocabulary = await parseExcel(wFile);
+
+        // 3. Setup UI
+        const sel = document.getElementById('classSel');
+        sel.innerHTML = '';
+        Object.keys(classData).forEach(c => {
+            sel.innerHTML += `<option value="${c}">${c}</option>`;
+        });
+
+        document.getElementById('configModal').style.display = 'none';
+        document.getElementById('lobby').style.display = 'none';
+        document.getElementById('main').style.display = 'flex';
+        renderClassGrid();
     }
 
-    async function loadSet(fId, settings) {
-        const f = document.getElementById(fId).files[0];
-        if(!f) return;
-        let lines = (await f.text()).split('\n').filter(l => l.trim());
-        // For the main pool, we store the whole set if "all", or use logic to handle random later
-        studio.pool.push(...lines);
-    }
-
-    function renderGrid() {
-        const cid = document.getElementById('class-nav').value;
-        document.getElementById('display-cid').innerText = "Class " + cid;
-        const grid = document.getElementById('main-grid'); grid.innerHTML = '';
-        const names = studio.classNames[cid] || [];
-        for(let i=1; i<=30; i++) {
+    function renderClassGrid() {
+        const grid = document.getElementById('seatGrid');
+        const className = document.getElementById('classSel').value;
+        const names = classData[className] || [];
+        grid.innerHTML = '';
+        names.forEach((name, idx) => {
             const s = document.createElement('div');
-            const studentName = names[i-1] || "";
-            s.className = 'seat'; s.id = 'seat-'+i;
-            s.innerHTML = `${i}<br><span style="font-size:0.8rem; color:#888;">${studentName}</span>`;
-            s.onclick = () => { window.activeS = i; activeStudentName = studentName; openBooth(); };
+            s.className = 'seat';
+            s.innerHTML = `<span class="s-num">${idx+1}</span><small>${name}</small>`;
+            s.onclick = () => openStudio(idx + 1, name, s);
             grid.appendChild(s);
-        }
-        setTimeout(attachListeners, 100);
+        });
     }
 
-    function openBooth() {
-        const displayName = activeStudentName ? `${window.activeS}. ${activeStudentName}` : `Student ${window.activeS}`;
-        document.getElementById('student-name-display').innerText = displayName;
+    function openStudio(num, name, el) {
+        curSeat = num; curEl = el;
+        document.getElementById('sLabel').innerText = name;
+        document.getElementById('aiRating').style.display = 'none';
         
-        // Calculate total items for this student
-        let studentPool = [];
-        // Logic: if random X, pick X from the pool. If all, take all.
-        // For simplicity, we currently pool everything together. To fix per-student random:
-        const totalRandom = (studio.settings.words.qty || 0) + (studio.settings.sentences.qty || 0) + (studio.settings.phonics.qty || 0);
+        // Pick random word
+        if(vocabulary.length > 0) {
+            const qty = document.getElementById('wordQty').value || 1;
+            const shuffled = [...vocabulary].sort(() => 0.5 - Math.random());
+            document.getElementById('wordBox').innerText = shuffled.slice(0, qty).join(", ");
+        }
+
+        document.getElementById('modal').style.display = 'flex';
+        document.getElementById('startBtn').style.display = 'block';
+        document.getElementById('recControls').style.display = 'none';
+    }
+
+    async function startRec() {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recorder = new MediaRecorder(stream);
+        chunks = [];
+        lastTranscript = "";
+
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.start();
+        recognition.start();
+
+        recognition.onresult = (e) => { lastTranscript = e.results[0][0].transcript; };
+
+        document.getElementById('startBtn').style.display = 'none';
+        document.getElementById('recControls').style.display = 'block';
+    }
+
+    function stopRec() {
+        recorder.stop();
+        recognition.stop();
+        stream.getTracks().forEach(t => t.stop());
+
+        // AI Scoring Logic
+        const target = document.getElementById('wordBox').innerText.toLowerCase();
+        const score = calculateScore(target, lastTranscript.toLowerCase());
         
-        if (totalRandom > 0) {
-            studentPool = [...studio.pool].sort(() => 0.5 - Math.random()).slice(0, totalRandom);
-        } else {
-            studentPool = [...studio.pool];
-        }
+        const badge = document.getElementById('aiRating');
+        badge.innerHTML = `AI Heard: "${lastTranscript || '...'}" <br> Score: ${score}%`;
+        badge.style.display = 'block';
 
-        currentStudentPrompts = studentPool;
-        currentPromptIndex = 0;
-        updatePromptDisplay();
-        document.getElementById('rating-display').innerText = "Score: --/10";
-        showView('view-recorder');
+        curEl.classList.add('done');
+        setTimeout(closeModal, 3000);
     }
 
-    function updatePromptDisplay() {
-        const display = document.getElementById('word-display');
-        if (currentStudentPrompts.length > 0) {
-            display.innerText = currentStudentPrompts[currentPromptIndex];
-            document.getElementById('status-msg').innerText = `Item ${currentPromptIndex + 1} of ${currentStudentPrompts.length}`;
-        } else {
-            display.innerText = "No Materials Uploaded";
-        }
+    function calculateScore(target, spoken) {
+        if (!spoken) return 0;
+        const tArr = target.split(/[\s,]+/);
+        const sArr = spoken.split(/\s+/);
+        let matches = 0;
+        tArr.forEach(w => { if(sArr.includes(w)) matches++; });
+        return Math.round((matches / tArr.length) * 100);
     }
 
-    if ('webkitSpeechRecognition' in window) {
-        recognition = new webkitSpeechRecognition();
-        recognition.onresult = (e) => {
-            const conf = e.results[0][0].confidence;
-            const score = Math.min(10, Math.max(1, Math.ceil(conf * 10)));
-            latestScore = score; 
-            document.getElementById('rating-display').innerText = "Score: " + latestScore + "/10";
-        };
+    function parseExcel(file) {
+        return new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const data = XLSX.read(e.target.result, {type:'binary'});
+                const sheet = data.Sheets[data.SheetNames[0]];
+                resolve(XLSX.utils.sheet_to_json(sheet, {header:1}).flat().filter(x => x));
+            };
+            reader.readAsBinaryString(file);
+        });
     }
 
-    async function toggleMic() {
-        const btn = document.getElementById('mic-btn');
-        if(!isRec) {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRec = new MediaRecorder(stream);
-            chunks = []; mediaRec.ondataavailable = e => chunks.push(e.data);
-            mediaRec.onstop = upload; mediaRec.start(); recognition.start();
-            isRec = true; btn.innerText = "🛑 Stop"; btn.className = "btn btn-pink";
-        } else {
-            mediaRec.stop(); isRec = false; btn.innerText = "🎤 Record"; btn.className = "btn btn-green";
-        }
-    }
-
-    async function upload() {
-        document.getElementById('status-msg').innerText = "Saving to Drive...";
-        const blob = new Blob(chunks, { type: 'audio/webm' });
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = async () => {
-            const base64 = reader.result.split(',')[1];
-            const cid = document.getElementById('class-nav').value;
-            const safeName = activeStudentName.replace(/[^a-z0-9]/gi, '_');
-            const fname = `${window.activeS.toString().padStart(2, '0')}_${safeName}_${cid}.webm`;
-            
-            const params = new URLSearchParams({
-                audio: base64, 
-                filename: fname,
-                className: cid, 
-                score: `${activeStudentName} ${latestScore} (${latestScore}/10) score`
-            });
-            await fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' });
-            
-            // Check if there are more prompts for this student
-            if (currentPromptIndex < currentStudentPrompts.length - 1) {
-                currentPromptIndex++;
-                updatePromptDisplay();
-                document.getElementById('status-msg').innerText = "Saved! Next prompt ready...";
-            } else {
-                document.getElementById('seat-'+window.activeS).classList.add('done');
-                showView('view-grid');
-            }
-        };
-    }
-    attachListeners();
+    function closeModal() { document.getElementById('modal').style.display = 'none'; }
 </script>
 </body>
 </html>
