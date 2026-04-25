@@ -19,8 +19,7 @@
 
         body { 
             font-family: 'Fredoka', 'Comic Sans MS', sans-serif; 
-            background: url('bg.png') no-repeat center center fixed; 
-            background-size: cover; margin: 0; display: flex; 
+            background: #f0f4f0; margin: 0; display: flex; 
             flex-direction: column; align-items: center; min-height: 100vh;
             color: var(--deep-brown);
         }
@@ -34,7 +33,7 @@
         }
 
         .studio-title { 
-            font-size: 3.2rem; color: white; text-shadow: 4px 4px 0 var(--deep-brown); 
+            font-size: 3.2rem; color: var(--primary); text-shadow: 2px 2px 0 white; 
             text-align: center; margin-top: 50px; font-variant: small-caps;
         }
 
@@ -61,7 +60,6 @@
         .config-section { background: rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 20px; margin: 15px 0; border: 2px dashed var(--accent); }
         .config-row { display: grid; grid-template-columns: 2fr 1.5fr 100px; gap: 15px; align-items: center; margin-bottom: 12px; }
         .input-box { padding: 10px; border-radius: 12px; border: 2px solid #ccc; width: 100%; font-family: inherit; font-size: 1rem; box-sizing: border-box; }
-        .input-box:disabled { background: #eee; cursor: not-allowed; opacity: 0.5; }
 
         .seat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; margin-top: 25px; }
         .seat { 
@@ -69,7 +67,7 @@
             text-align: center; border: 4px solid #eee; cursor: pointer; 
             font-weight: bold; font-size: 1.2rem; transition: 0.3s;
         }
-        .seat.done { background: #8fb376; color: white; border-color: #8fb376; }
+        .seat.done { background: #8fb376 !important; color: white !important; border-color: #6d8a57 !important; }
 
         #word-display { font-size: 4.5rem; color: var(--secondary); text-align: center; margin: 35px 0; font-variant: small-caps; font-weight: 600; text-shadow: 2px 2px 0 white; }
         #rating-display { font-size: 3rem; font-weight: 600; color: var(--deep-brown); margin: 10px 0; }
@@ -111,9 +109,7 @@
             
             <div class="config-section">
                 <h3>Storage Destination</h3>
-                <div class="config-row" style="grid-template-columns: 1fr;">
-                    <input type="text" id="drive-link" class="input-box" placeholder="Paste Google Drive Folder Link Here..." onchange="saveDriveLink()">
-                </div>
+                <input type="text" id="drive-link" class="input-box" placeholder="Paste Google Drive Folder Link Here..." onchange="saveDriveLink()">
             </div>
 
             <div class="config-section">
@@ -170,13 +166,42 @@
     </footer>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2Lkc9e5EqGB_6vU5JWPw4vB2mBp_VQsEsOLrwL2RSj21PWOo9qPEJ4r0L4M0wn6AB/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzDjH_FAQskw8H72foVbYRtBWqvyrTccwAng4iAwfe3bpJccJF6CcMho3vQsVj5wEKW/exec";
+    
     const hSnd = document.getElementById('snd-hover');
     const cSnd = document.getElementById('snd-click');
+    
     let studio = { grade: '', pool: [], classNames: {}, settings: {}, driveLink: '' };
-    let isRec = false, mediaRec, chunks = [], recognition, latestScore = 0, activeStudentName = "", currentPromptIndex = 0, currentStudentPrompts = [], sessionScores = [], sessionAudioChunks = [];
+    let isRec = false, mediaRec, chunks = [], recognition, latestScore = 0;
+    let activeStudentName = "", currentPromptIndex = 0, currentStudentPrompts = [];
+    let sessionScores = [], sessionAudioChunks = [];
 
-    // Load saved drive link on startup
+    // Speech Recognition setup with Reliability Fix
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = (e) => {
+            const transcript = e.results[0][0].transcript.toLowerCase().trim();
+            const target = currentStudentPrompts[currentPromptIndex].toLowerCase().trim();
+            const confidence = e.results[0][0].confidence;
+
+            // Rating logic comparing text match vs target
+            if (transcript === target) {
+                latestScore = 10;
+            } else if (transcript.includes(target) || target.includes(transcript)) {
+                latestScore = 8;
+            } else {
+                latestScore = Math.min(6, Math.max(1, Math.ceil(confidence * 10)));
+            }
+
+            document.getElementById('rating-display').innerText = "Score: " + latestScore + "/10";
+            document.getElementById('status-msg').innerText = `Heard: "${transcript}"`;
+        };
+    }
+
     window.onload = () => {
         const savedLink = localStorage.getItem('wynn_drive_link');
         if(savedLink) {
@@ -190,11 +215,8 @@
         localStorage.setItem('wynn_drive_link', studio.driveLink);
     }
 
-    function playClick() { cSnd.currentTime = 0; cSnd.play(); }
-    function playHover() { hSnd.currentTime = 0; hSnd.play(); }
-
-    function toggleQty(selectId, qtyId) {
-        const sel = document.getElementById(selectId);
+    function toggleQty(selId, qtyId) {
+        const sel = document.getElementById(selId);
         const qty = document.getElementById(qtyId);
         qty.disabled = (sel.value === 'all');
         if(qty.disabled) qty.value = '';
@@ -253,9 +275,9 @@
             phonics: { mode: document.getElementById('mode-phonics').value, qty: parseInt(document.getElementById('qty-phonics').value) || 0 }
         };
 
-        await loadSet('up-words', studio.settings.words);
-        await loadSet('up-sentences', studio.settings.sentences);
-        await loadSet('up-phonics', studio.settings.phonics);
+        await loadSet('up-words');
+        await loadSet('up-sentences');
+        await loadSet('up-phonics');
         
         const num = document.getElementById('num-classes').value;
         const nav = document.getElementById('class-nav'); nav.innerHTML = '';
@@ -271,7 +293,7 @@
         renderGrid(); showView('view-grid');
     }
 
-    async function loadSet(fId, settings) {
+    async function loadSet(fId) {
         const f = document.getElementById(fId).files[0];
         if(!f) return;
         let lines = (await f.text()).split('\n').filter(l => l.trim());
@@ -295,7 +317,7 @@
     }
 
     function openBooth() {
-        const displayName = activeStudentName ? `${window.activeS.prop}. ${activeStudentName}` : `Student ${window.activeS}`;
+        const displayName = activeStudentName ? `${window.activeS}. ${activeStudentName}` : `Student ${window.activeS}`;
         document.getElementById('student-name-display').innerText = displayName;
         
         let studentPool = [];
@@ -311,6 +333,7 @@
         currentPromptIndex = 0;
         sessionScores = [];
         sessionAudioChunks = [];
+        latestScore = 0;
         updatePromptDisplay();
         document.getElementById('rating-display').innerText = "Score: --/10";
         showView('view-recorder');
@@ -324,25 +347,23 @@
         }
     }
 
-    if ('webkitSpeechRecognition' in window) {
-        recognition = new webkitSpeechRecognition();
-        recognition.onresult = (e) => {
-            const conf = e.results[0][0].confidence;
-            latestScore = Math.min(10, Math.max(1, Math.ceil(conf * 10)));
-            document.getElementById('rating-display').innerText = "Score: " + latestScore + "/10";
-        };
-    }
-
     async function toggleMic() {
         const btn = document.getElementById('mic-btn');
         if(!isRec) {
+            latestScore = 1; // Base score
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRec = new MediaRecorder(stream);
-            chunks = []; mediaRec.ondataavailable = e => chunks.push(e.data);
-            mediaRec.onstop = handleItemEnd; mediaRec.start(); recognition.start();
-            isRec = true; btn.innerText = "🛑 Stop"; btn.className = "btn btn-pink";
+            chunks = []; 
+            mediaRec.ondataavailable = e => chunks.push(e.data);
+            mediaRec.onstop = handleItemEnd; 
+            mediaRec.start(); 
+            recognition.start();
+            isRec = true; 
+            btn.innerText = "🛑 Stop"; btn.className = "btn btn-pink";
         } else {
-            mediaRec.stop(); isRec = false; btn.innerText = "🎤 Record"; btn.className = "btn btn-green";
+            mediaRec.stop(); 
+            isRec = false; 
+            btn.innerText = "🎤 Record"; btn.className = "btn btn-green";
         }
     }
 
@@ -353,31 +374,31 @@
         if (currentPromptIndex < currentStudentPrompts.length - 1) {
             currentPromptIndex++;
             updatePromptDisplay();
-            document.getElementById('status-msg').innerText = "Saved! Get ready for next item...";
+            document.getElementById('rating-display').innerText = "Score: --/10";
         } else {
             await uploadFinalSession();
         }
     }
 
     async function uploadFinalSession() {
-        document.getElementById('status-msg').innerText = "Sending final file to Drive...";
+        document.getElementById('status-msg').innerText = "Saving to Drive...";
         const blob = new Blob(sessionAudioChunks, { type: 'audio/webm' });
         const reader = new FileReader();
         reader.readAsDataURL(blob);
         reader.onloadend = async () => {
             const base64 = reader.result.split(',')[1];
-            const cid = document.getElementById('class-nav').value;
             const safeName = activeStudentName.replace(/[^a-z0-9]/gi, '_') || "Student";
-            const scoreString = sessionScores.join('-');
-            const fname = `${window.activeS.toString().padStart(2, '0')}_${safeName}_${scoreString}.webm`;
+            const scoreFormatted = `(${sessionScores.join('-')})`;
+            const num = window.activeS.toString().padStart(2, '0');
+            const fname = `${num}_${safeName}${scoreFormatted}.webm`;
             
             const params = new URLSearchParams({
                 audio: base64, 
                 filename: fname,
-                className: cid,
-                driveLink: studio.driveLink // Added this line to send the link
+                driveLink: studio.driveLink
             });
             
+            // Sending post request to Apps Script
             await fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' });
             document.getElementById('seat-'+window.activeS).classList.add('done');
             showView('view-grid');
