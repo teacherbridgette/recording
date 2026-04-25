@@ -17,9 +17,11 @@
             --neon-green: #a9cc9e;
         }
 
+        /* 1. BACKGROUND IMAGE ADDED */
         body { 
             font-family: 'Fredoka', 'Comic Sans MS', sans-serif; 
-            background: #f0f4f0; margin: 0; display: flex; 
+            background: url('bg.png') no-repeat center center fixed; 
+            background-size: cover; margin: 0; display: flex; 
             flex-direction: column; align-items: center; min-height: 100vh;
             color: var(--deep-brown);
         }
@@ -33,7 +35,7 @@
         }
 
         .studio-title { 
-            font-size: 3.2rem; color: var(--primary); text-shadow: 2px 2px 0 white; 
+            font-size: 3.2rem; color: white; text-shadow: 4px 4px 0 var(--deep-brown); 
             text-align: center; margin-top: 50px; font-variant: small-caps;
         }
 
@@ -47,13 +49,18 @@
             margin-top: 20px; backdrop-filter: blur(8px);
         }
 
+        /* 2. NEON EFFECT ADDED TO BUTTONS */
         .btn { 
             padding: 20px 30px; border: 3px solid transparent; border-radius: 25px; font-size: 1.3rem; 
             font-weight: 600; cursor: pointer; background: var(--primary); color: white; 
             box-shadow: 0 8px 0 #5a7a48; margin: 12px 0; width: 100%; font-variant: small-caps; 
             transition: all 0.2s ease;
         }
-        .btn:hover { border-color: #fff; box-shadow: 0 0 20px var(--neon-green); transform: scale(1.02); }
+        .btn:hover { 
+            border-color: #fff; 
+            box-shadow: 0 0 20px var(--neon-green), 0 0 40px var(--neon-green); 
+            transform: scale(1.02); 
+        }
         .btn-pink { background: var(--secondary); box-shadow: 0 8px 0 #b88661; }
         .btn-green { background: #8fb376; box-shadow: 0 8px 0 #6d8a57; }
 
@@ -67,7 +74,7 @@
             text-align: center; border: 4px solid #eee; cursor: pointer; 
             font-weight: bold; font-size: 1.2rem; transition: 0.3s;
         }
-        .seat.done { background: #8fb376 !important; color: white !important; border-color: #6d8a57 !important; }
+        .seat.done { background: #8fb376 !important; color: white !important; border-color: #6d8a57 !important; box-shadow: 0 0 15px var(--neon-green); }
 
         #word-display { font-size: 4.5rem; color: var(--secondary); text-align: center; margin: 35px 0; font-variant: small-caps; font-weight: 600; text-shadow: 2px 2px 0 white; }
         #rating-display { font-size: 3rem; font-weight: 600; color: var(--deep-brown); margin: 10px 0; }
@@ -176,7 +183,6 @@
     let activeStudentName = "", currentPromptIndex = 0, currentStudentPrompts = [];
     let sessionScores = [], sessionAudioChunks = [];
 
-    // Speech Recognition setup with Reliability Fix
     if ('webkitSpeechRecognition' in window) {
         recognition = new webkitSpeechRecognition();
         recognition.continuous = false;
@@ -188,7 +194,6 @@
             const target = currentStudentPrompts[currentPromptIndex].toLowerCase().trim();
             const confidence = e.results[0][0].confidence;
 
-            // Rating logic comparing text match vs target
             if (transcript === target) {
                 latestScore = 10;
             } else if (transcript.includes(target) || target.includes(transcript)) {
@@ -224,7 +229,8 @@
 
     function attachListeners() {
         document.querySelectorAll('.btn, .seat, .widget-btn').forEach(el => {
-            el.onmouseenter = playHover; el.onmousedown = playClick;
+            el.onmouseenter = () => { hSnd.currentTime = 0; hSnd.play(); };
+            el.onmousedown = () => { cSnd.currentTime = 0; cSnd.play(); };
         });
     }
 
@@ -350,7 +356,7 @@
     async function toggleMic() {
         const btn = document.getElementById('mic-btn');
         if(!isRec) {
-            latestScore = 1; // Base score
+            latestScore = 1;
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRec = new MediaRecorder(stream);
             chunks = []; 
@@ -398,7 +404,6 @@
                 driveLink: studio.driveLink
             });
             
-            // Sending post request to Apps Script
             await fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' });
             document.getElementById('seat-'+window.activeS).classList.add('done');
             showView('view-grid');
