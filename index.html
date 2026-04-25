@@ -3,75 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Wynn's English Recording Studio</title>
+    <title>Teacher Wynn's English Studio</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root { 
             --bg-green: #7a9e60;
             --sun-orange: #e2a87a;
             --deep-brown: #665040;
-            --paper-white: rgba(252, 251, 242, 0.96);
+            --paper-white: rgba(252, 251, 242, 0.98);
             --primary: var(--bg-green);
             --secondary: var(--sun-orange);
             --accent: #a48c7e;
-            --neon-green: #a9cc9e;
         }
 
         body { 
             font-family: 'Fredoka', 'Comic Sans MS', sans-serif; 
-            background: #f4f1de; margin: 0; display: flex; 
-            flex-direction: column; align-items: center; min-height: 100vh;
+            background: #fdfaf0 url('https://www.transparenttextures.com/patterns/paper-fibers.png'); 
+            margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh;
             color: var(--deep-brown);
         }
 
+        /* UI Elements */
         .widget-bar { position: fixed; top: 15px; right: 15px; display: flex; gap: 12px; z-index: 1000; }
         .widget-btn {
             background: white; border: 3px solid var(--primary); border-radius: 50%;
             width: 50px; height: 50px; cursor: pointer; display: flex;
             align-items: center; justify-content: center; font-size: 1.3rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s;
+            box-shadow: 0 4px 0 var(--deep-brown); transition: 0.2s;
         }
+        .widget-btn:active { transform: translateY(3px); box-shadow: none; }
 
         .studio-title { 
-            font-size: 3.2rem; color: var(--primary); text-shadow: 2px 2px 0 white; 
-            text-align: center; margin-top: 50px; font-variant: small-caps;
+            font-size: 3.2rem; color: var(--primary); text-shadow: 3px 3px 0 white; 
+            text-align: center; margin-top: 40px; font-variant: small-caps;
         }
 
-        .screen { display: none; width: 95%; max-width: 900px; padding: 20px; box-sizing: border-box; animation: fadeIn 0.4s ease; }
-        .active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        .screen { display: none; width: 95%; max-width: 900px; padding: 20px; box-sizing: border-box; }
+        .active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .card { 
-            background: var(--paper-white); border-radius: 45px; padding: 35px; 
-            border: 5px solid var(--accent); box-shadow: 0 20px 45px rgba(0,0,0,0.1);
-            margin-top: 20px; backdrop-filter: blur(8px);
+            background: var(--paper-white); border-radius: 35px; padding: 30px; 
+            border: 5px solid var(--deep-brown); box-shadow: 0 15px 0 var(--deep-brown);
+            margin-top: 20px;
         }
 
+        /* Buttons */
         .btn { 
-            padding: 20px 30px; border: 3px solid transparent; border-radius: 25px; font-size: 1.3rem; 
+            padding: 20px; border: none; border-radius: 20px; font-size: 1.3rem; 
             font-weight: 600; cursor: pointer; background: var(--primary); color: white; 
-            box-shadow: 0 8px 0 #5a7a48; margin: 12px 0; width: 100%; font-variant: small-caps; 
-            transition: all 0.2s ease;
+            box-shadow: 0 8px 0 #5a7a48; margin: 12px 0; width: 100%; font-variant: small-caps;
+            transition: 0.1s;
         }
-        .btn:hover { border-color: #fff; transform: scale(1.02); }
+        .btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #5a7a48; }
         .btn-pink { background: var(--secondary); box-shadow: 0 8px 0 #b88661; }
-        .btn-green { background: #8fb376; box-shadow: 0 8px 0 #6d8a57; }
 
-        .config-section { background: rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 20px; margin: 15px 0; border: 2px dashed var(--accent); }
-        .input-box { padding: 10px; border-radius: 12px; border: 2px solid #ccc; width: 100%; font-family: inherit; font-size: 1rem; box-sizing: border-box; }
+        /* Setup Inputs */
+        .config-section { background: rgba(0,0,0,0.03); border-radius: 20px; padding: 20px; margin: 15px 0; border: 2px dashed var(--accent); }
+        .input-box { 
+            padding: 12px; border-radius: 12px; border: 3px solid #ccc; width: 100%; 
+            font-family: inherit; font-size: 1.1rem; box-sizing: border-box; margin-top: 8px;
+        }
 
+        /* Grid */
         .seat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; margin-top: 25px; }
         .seat { 
             background: white; border-radius: 20px; padding: 25px 10px; 
             text-align: center; border: 4px solid #eee; cursor: pointer; 
             font-weight: bold; font-size: 1.2rem; transition: 0.3s;
+            box-shadow: 0 6px 0 #ddd;
         }
-        .seat.done { background: #8fb376 !important; color: white !important; border-color: #6d8a57 !important; }
+        .seat.done { background: #d4edda !important; color: #28a745 !important; border-color: #28a745 !important; box-shadow: 0 6px 0 #1e7e34; }
 
-        #word-display { font-size: 4.5rem; color: var(--secondary); text-align: center; margin: 25px 0; font-variant: small-caps; font-weight: 600; text-shadow: 2px 2px 0 white; }
-        #rating-display { font-size: 3.5rem; font-weight: 600; color: var(--deep-brown); margin: 10px 0; }
+        #word-display { font-size: 4.5rem; color: var(--secondary); text-align: center; margin: 25px 0; font-weight: 600; text-shadow: 2px 2px 0 white; }
+        #score-display { font-size: 3rem; color: var(--deep-brown); margin: 10px 0; }
 
-        footer { margin-top: auto; padding: 20px; text-align: center; width: 100%; font-weight: 600; font-size: 0.9rem; color: var(--accent); }
+        footer { margin-top: auto; padding: 30px; text-align: center; font-weight: 600; opacity: 0.7; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -82,255 +89,262 @@
         <button class="widget-btn" onclick="clearCache()">🧹</button>
     </div>
 
-    <div id="view-start" class="screen active">
-        <h1 class="studio-title">Teacher Wynn's Recording Studio</h1>
-        <div class="card">
-            <button class="btn" onclick="navGrades('Elementary')">Elementary School</button>
-            <button class="btn btn-pink" onclick="navGrades('Junior High')">Junior High School</button>
-        </div>
-    </div>
+    <audio id="snd-click" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
 
-    <div id="view-grades" class="screen">
-        <h2 style="text-align:center;">Select Grade</h2>
-        <div id="grade-btns" class="card" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px;"></div>
-        <button class="btn" style="background:#888; box-shadow:0 8px 0 #555" onclick="showView('view-start')">Back</button>
+    <h1 class="studio-title">Teacher Wynn's Studio</h1>
+
+    <div id="view-start" class="screen active">
+        <div class="card" style="text-align: center;">
+            <p>Welcome, Teacher Wynn! Ready to record your students?</p>
+            <button class="btn" onclick="showView('view-config')">⚙️ Setup New Session</button>
+            <button id="resume-btn" class="btn btn-pink hidden" onclick="resumeSession()">🚀 Resume Last Session</button>
+        </div>
     </div>
 
     <div id="view-config" class="screen">
         <div class="card">
-            <h2 style="color: var(--primary)">Studio Setup</h2>
+            <h2>Session Setup</h2>
+            
             <div class="config-section">
-                <h3>1. Storage (Google Drive Link)</h3>
-                <input type="text" id="drive-link" class="input-box" placeholder="Paste Folder Link..." onchange="saveDriveLink()">
+                <strong>1. Google Drive Folder Link:</strong>
+                <input type="text" id="drive-link" class="input-box" placeholder="Paste the full folder URL here...">
             </div>
+
             <div class="config-section">
-                <h3>2. Class Setup</h3>
-                <input type="number" id="num-classes" class="input-box" value="3" onchange="buildClassInputs()">
-                <div id="class-entry-area" style="margin-top:10px;"></div>
+                <strong>2. Class ID (e.g., 501, 203):</strong>
+                <input type="text" id="class-id" class="input-box" placeholder="Enter Class Name...">
             </div>
+
             <div class="config-section">
-                <h3>3. Materials (.txt files)</h3>
-                <input type="file" id="up-pool" class="input-box">
-                <p style="font-size: 0.8rem; color: #666;">Upload one TXT file with words/sentences on each line.</p>
+                <strong>3. Student Name List (One per line):</strong>
+                <textarea id="student-list" class="input-box" rows="5" placeholder="John&#10;Mary&#10;Leo..."></textarea>
             </div>
-            <button class="btn btn-green" onclick="startSession()">Open Studio 🚀</button>
+
+            <div class="config-section">
+                <strong>4. Vocabulary/Sentences (One per line):</strong>
+                <textarea id="word-list" class="input-box" rows="5" placeholder="Apple&#10;I like cats.&#10;Happy..."></textarea>
+            </div>
+
+            <button class="btn btn-green" onclick="saveAndStart()">Start Recording Studio 🚀</button>
         </div>
     </div>
 
     <div id="view-grid" class="screen">
-        <h2 id="display-cid" style="font-size: 2.5rem; color:var(--primary);">Class</h2>
-        <select id="class-nav" class="input-box" style="width: auto; min-width: 180px;" onchange="renderGrid()"></select>
+        <h2 id="grid-title">Class 501</h2>
         <div id="main-grid" class="seat-grid"></div>
-        <button class="btn" style="background:#888; box-shadow:0 8px 0 #555; margin-top:30px;" onclick="showView('view-config')">Settings</button>
+        <button class="btn btn-pink" style="margin-top:40px;" onclick="showView('view-config')">Change Settings</button>
     </div>
 
     <div id="view-recorder" class="screen">
         <div class="card" style="text-align: center;">
-            <div id="status-msg" style="font-weight:bold; color:var(--accent);">Ready</div>
-            <h2 id="student-name-display" style="color: var(--primary);">Student</h2>
+            <div id="status-msg" style="color: var(--accent); font-weight: 600;">Ready</div>
+            <h2 id="active-student-name" style="color: var(--primary);">Student</h2>
             <div id="word-display">...</div>
-            <div id="rating-display" class="hidden">Score: --/10</div>
+            <div id="score-display" class="hidden">Score: --/10</div>
             
             <div style="display:flex; gap:15px; flex-direction: column;">
-                <button id="mic-btn" class="btn btn-green" onclick="toggleMic()">🎤 Record</button>
-                <button id="next-btn" class="btn btn-pink hidden" onclick="handleNext()">Next Word ➔</button>
-                <button id="back-btn" class="btn" style="background:#888; box-shadow:0 8px 0 #555" onclick="showView('view-grid')">Back to Grid</button>
+                <button id="mic-btn" class="btn" onclick="toggleMic()">🎤 Record</button>
+                <button id="next-btn" class="btn btn-pink hidden" onclick="handleNext()">Next ➔</button>
+                <button id="exit-btn" class="btn" style="background:#888; box-shadow:0 8px 0 #555" onclick="showView('view-grid')">Exit Studio</button>
             </div>
         </div>
     </div>
 
-    <footer>Teacher Wynn | Taiwan TFETP | Bilingual 2030</footer>
+    <footer>
+        English Studio for TFETP Classroom Management
+    </footer>
 
 <script>
-    // --- CONFIGURATION ---
+    // --- 1. SETTINGS & GLOBALS ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3cd7Qwvi9MU3Uua4J4ZbsGu3t3kpGlhewYH-O-6YA2ztnqF-Vk5Cu_60WABIkWeo2/exec";
     
-    let studio = { grade: '', pool: [], classNames: {}, driveLink: '' };
-    let isRec = false, mediaRec, chunks = [], recognition, latestScore = 0;
-    let activeStudentName = "", currentPromptIndex = 0, currentStudentPrompts = [];
-    let sessionScores = [], sessionAudioChunks = [];
-
-    // --- SPEECH RECOGNITION (KIND TEACHER LOGIC) ---
-    if ('webkitSpeechRecognition' in window) {
-        recognition = new webkitSpeechRecognition();
-        recognition.lang = 'en-US';
-        recognition.onresult = (e) => {
-            const transcript = e.results[0][0].transcript.toLowerCase().trim();
-            const target = currentStudentPrompts[currentPromptIndex].toLowerCase().trim();
-            
-            if (transcript === target) latestScore = 10;
-            else if (transcript.includes(target) || target.includes(transcript)) latestScore = 9;
-            else if (transcript[0] === target[0]) latestScore = 8;
-            else latestScore = 7; // Participation points!
-            
-            document.getElementById('status-msg').innerText = `Teacher heard: "${transcript}"`;
-        };
-    }
-
-    window.onload = () => {
-        const savedLink = localStorage.getItem('wynn_drive_link');
-        if(savedLink) { document.getElementById('drive-link').value = savedLink; studio.driveLink = savedLink; }
+    let studioData = { 
+        driveLink: '', 
+        classId: '', 
+        students: [], 
+        words: [], 
+        completed: [] 
     };
 
-    function saveDriveLink() {
-        studio.driveLink = document.getElementById('drive-link').value;
-        localStorage.setItem('wynn_drive_link', studio.driveLink);
-    }
+    let session = {
+        activeSeat: null,
+        activeName: '',
+        wordIndex: 0,
+        scores: [],
+        chunks: [],
+        isRecording: false
+    };
+
+    let recognition;
+    let mediaRecorder;
+
+    // --- 2. INITIALIZATION ---
+    window.onload = () => {
+        const saved = localStorage.getItem('teacher_wynn_studio');
+        if(saved) {
+            studioData = JSON.parse(saved);
+            document.getElementById('resume-btn').classList.remove('hidden');
+        }
+    };
+
+    function playClick() { document.getElementById('snd-click').play(); }
 
     function showView(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+        playClick();
     }
 
-    function navGrades(type) {
-        const container = document.getElementById('grade-btns'); container.innerHTML = '';
-        const grades = type === 'Elementary' ? [1,2,3,4,5,6] : [7,8,9];
-        grades.forEach(g => {
-            const b = document.createElement('button');
-            b.className = 'btn'; b.innerText = 'Grade ' + g;
-            b.onclick = () => { studio.grade = g; buildConfig(); };
-            container.appendChild(b);
-        });
-        showView('view-grades');
+    // --- 3. CONFIGURATION LOGIC ---
+    function saveAndStart() {
+        studioData.driveLink = document.getElementById('drive-link').value;
+        studioData.classId = document.getElementById('class-id').value;
+        studioData.students = document.getElementById('student-list').value.split('\n').filter(s => s.trim());
+        studioData.words = document.getElementById('word-list').value.split('\n').filter(w => w.trim());
+        studioData.completed = [];
+
+        if(!studioData.driveLink || !studioData.classId) return alert("Please fill in Folder Link and Class ID");
+
+        localStorage.setItem('teacher_wynn_studio', JSON.stringify(studioData));
+        renderGrid();
+        showView('view-grid');
     }
 
-    function buildConfig() { buildClassInputs(); showView('view-config'); }
-
-    function buildClassInputs() {
-        const num = document.getElementById('num-classes').value;
-        const area = document.getElementById('class-entry-area'); area.innerHTML = '';
-        for(let i=1; i<=num; i++) {
-            const cid = `${studio.grade}0${i}`;
-            area.innerHTML += `<div style="background:white; padding:10px; margin-bottom:8px; border-radius:12px; border:1px solid #ddd;">
-                <strong>Class ${cid} Name List (.txt)</strong><br>
-                <input type="file" id="names-${cid}" class="input-box" style="margin-top:5px;" accept=".txt">
-            </div>`;
-        }
-    }
-
-    async function startSession() {
-        const poolFile = document.getElementById('up-pool').files[0];
-        if(!poolFile) return alert("Please upload your word list TXT file!");
-        studio.pool = (await poolFile.text()).split('\n').map(l => l.trim()).filter(l => l);
-
-        const num = document.getElementById('num-classes').value;
-        const nav = document.getElementById('class-nav'); nav.innerHTML = '';
-        for(let i=1; i<=num; i++) {
-            const cid = `${studio.grade}0${i}`;
-            nav.innerHTML += `<option value="${cid}">Class ${cid}</option>`;
-            const f = document.getElementById('names-'+cid).files[0];
-            if(f) {
-                const text = await f.text();
-                studio.classNames[cid] = text.split('\n').map(n => n.trim()).filter(n => n);
-            }
-        }
-        renderGrid(); showView('view-grid');
+    function resumeSession() {
+        renderGrid();
+        showView('view-grid');
     }
 
     function renderGrid() {
-        const cid = document.getElementById('class-nav').value;
-        document.getElementById('display-cid').innerText = "Class " + cid;
-        const grid = document.getElementById('main-grid'); grid.innerHTML = '';
-        const names = studio.classNames[cid] || [];
-        for(let i=1; i<=30; i++) {
-            const s = document.createElement('div');
-            const sName = names[i-1] || "";
-            s.className = 'seat'; s.id = 'seat-'+i;
-            s.innerHTML = `${i}<br><span style="font-size:0.8rem; color:#888;">${sName}</span>`;
-            s.onclick = () => { window.activeS = i; activeStudentName = sName; openBooth(); };
-            grid.appendChild(s);
+        document.getElementById('grid-title').innerText = "Class: " + studioData.classId;
+        const grid = document.getElementById('main-grid');
+        grid.innerHTML = '';
+        
+        for(let i=0; i<30; i++) {
+            const sName = studioData.students[i] || "";
+            const seat = document.createElement('div');
+            seat.className = 'seat' + (studioData.completed.includes(i+1) ? ' done' : '');
+            seat.id = `seat-${i+1}`;
+            seat.innerHTML = `${i+1}<br><span style="font-size:0.7rem; opacity:0.6;">${sName}</span>`;
+            seat.onclick = () => openBooth(i+1, sName);
+            grid.appendChild(seat);
         }
     }
 
-    function openBooth() {
-        document.getElementById('student-name-display').innerText = activeStudentName ? `${window.activeS}. ${activeStudentName}` : `Student ${window.activeS}`;
-        currentStudentPrompts = [...studio.pool].sort(() => 0.5 - Math.random()).slice(0, 3); // 3 items per session
-        currentPromptIndex = 0; sessionScores = []; sessionAudioChunks = [];
-        resetBoothUI();
+    // --- 4. RECORDING BOOTH LOGIC ---
+    function openBooth(seatNum, name) {
+        session.activeSeat = seatNum;
+        session.activeName = name || `Student ${seatNum}`;
+        session.wordIndex = 0;
+        session.scores = [];
+        session.chunks = [];
+        
+        document.getElementById('active-student-name').innerText = session.activeName;
+        updateWordDisplay();
         showView('view-recorder');
     }
 
-    function resetBoothUI() {
-        latestScore = 0;
-        document.getElementById('word-display').innerText = currentStudentPrompts[currentPromptIndex];
-        document.getElementById('status-msg').innerText = `Item ${currentPromptIndex + 1} of ${currentStudentPrompts.length}`;
-        document.getElementById('rating-display').classList.add('hidden');
+    function updateWordDisplay() {
+        document.getElementById('word-display').innerText = studioData.words[session.wordIndex];
+        document.getElementById('status-msg').innerText = `Item ${session.wordIndex + 1} of ${studioData.words.length}`;
+        document.getElementById('score-display').classList.add('hidden');
         document.getElementById('next-btn').classList.add('hidden');
         document.getElementById('mic-btn').classList.remove('hidden');
         document.getElementById('mic-btn').innerText = "🎤 Record";
     }
 
+    // SPEECH RECOGNITION (Kind Teacher Version)
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.onresult = (e) => {
+            const transcript = e.results[0][0].transcript.toLowerCase().trim();
+            const target = studioData.words[session.wordIndex].toLowerCase().trim();
+            
+            let score = 7; // Participation points
+            if (transcript === target) score = 10;
+            else if (transcript.includes(target)) score = 9;
+            else if (transcript[0] === target[0]) score = 8;
+            
+            session.scores.push(score);
+            document.getElementById('score-display').innerText = "Score: " + score + "/10";
+            document.getElementById('status-msg').innerText = `I heard: "${transcript}"`;
+        };
+    }
+
     async function toggleMic() {
-        const btn = document.getElementById('mic-btn');
-        if(!isRec) {
-            latestScore = 1;
+        if(!session.isRecording) {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRec = new MediaRecorder(stream);
-            chunks = []; 
-            mediaRec.ondataavailable = e => chunks.push(e.data);
-            mediaRec.start(); 
+            mediaRecorder = new MediaRecorder(stream);
+            session.chunks = [];
+            mediaRecorder.ondataavailable = e => session.chunks.push(e.data);
+            mediaRecorder.start();
             if(recognition) recognition.start();
-            isRec = true; btn.innerText = "✅ Done";
+            
+            session.isRecording = true;
+            document.getElementById('mic-btn').innerText = "✅ Stop";
         } else {
-            mediaRec.stop(); isRec = false;
-            setTimeout(() => {
-                document.getElementById('rating-display').innerText = "Score: " + latestScore + "/10";
-                document.getElementById('rating-display').classList.remove('hidden');
-                btn.classList.add('hidden');
-                document.getElementById('next-btn').classList.remove('hidden');
-                document.getElementById('next-btn').innerText = (currentPromptIndex === currentStudentPrompts.length - 1) ? "💾 Save Session" : "Next Word ➔";
-            }, 300);
+            mediaRecorder.stop();
+            session.isRecording = false;
+            document.getElementById('mic-btn').classList.add('hidden');
+            document.getElementById('score-display').classList.remove('hidden');
+            document.getElementById('next-btn').classList.remove('hidden');
+            document.getElementById('next-btn').innerText = (session.wordIndex === studioData.words.length - 1) ? "💾 Save to Drive" : "Next Word ➔";
         }
     }
 
     function handleNext() {
-        sessionScores.push(latestScore);
-        sessionAudioChunks.push(...chunks);
-        if (currentPromptIndex < currentStudentPrompts.length - 1) {
-            currentPromptIndex++;
-            resetBoothUI();
+        if(session.wordIndex < studioData.words.length - 1) {
+            session.wordIndex++;
+            updateWordDisplay();
         } else {
-            uploadFinalSession();
+            uploadFinal();
         }
     }
 
-    async function uploadFinalSession() {
-        document.getElementById('status-msg').innerText = "Saving to Google Drive...";
+    async function uploadFinal() {
+        document.getElementById('status-msg').innerText = "Uploading to Google Drive...";
         document.getElementById('next-btn').classList.add('hidden');
         
-        const blob = new Blob(sessionAudioChunks, { type: 'audio/webm' });
+        const blob = new Blob(session.chunks, { type: 'audio/webm' });
         const reader = new FileReader();
         reader.readAsDataURL(blob);
         reader.onloadend = async () => {
             const base64 = reader.result.split(',')[1];
-            const safeName = activeStudentName.replace(/[^a-z0-9]/gi, '_') || "Student";
-            const scoreStr = sessionScores.join('-');
-            const fname = `${window.activeS.toString().padStart(2, '0')}_${safeName}(${scoreStr}).webm`;
-            const folderIdMatch = studio.driveLink.match(/[-\w]{25,}/);
+            const scoreStr = session.scores.join('-');
+            const fname = `${session.activeSeat}_${session.activeName.replace(/\s/g,'_')}(${scoreStr}).webm`;
+            
+            const folderId = studioData.driveLink.match(/[-\w]{25,}/)[0];
 
             const payload = {
                 audio: base64,
                 filename: fname,
-                className: document.getElementById('class-nav').value,
-                folderId: folderIdMatch ? folderIdMatch[0] : "",
-                studentName: activeStudentName,
+                className: studioData.classId,
+                folderId: folderId,
+                studentName: session.activeName,
                 scores: scoreStr
             };
 
             try {
                 await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+                
+                studioData.completed.push(session.activeSeat);
+                localStorage.setItem('teacher_wynn_studio', JSON.stringify(studioData));
+                
                 document.getElementById('status-msg').innerText = "Saved Successfully!";
-                document.getElementById('seat-'+window.activeS).classList.add('done');
-                setTimeout(() => showView('view-grid'), 1500);
-            } catch (err) {
-                document.getElementById('status-msg').innerText = "Upload Error!";
+                setTimeout(() => {
+                    renderGrid();
+                    showView('view-grid');
+                }, 1500);
+            } catch (e) {
+                alert("Upload failed. Check your internet.");
                 document.getElementById('next-btn').classList.remove('hidden');
             }
         };
     }
 
     function toggleFS() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
-    function clearCache() { if(confirm("Clear everything?")) { localStorage.clear(); location.reload(); } }
+    function clearCache() { if(confirm("Clear all session data?")) { localStorage.clear(); location.reload(); } }
 </script>
 </body>
 </html>
