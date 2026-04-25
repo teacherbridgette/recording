@@ -20,16 +20,11 @@
         body { 
             font-family: 'Fredoka', 'Comic Sans MS', sans-serif; 
             background: #f0f4ef url('bg.png') no-repeat center center fixed; 
-            background-size: cover; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            min-height: 100vh; 
+            background-size: cover; margin: 0; display: flex; 
+            flex-direction: column; align-items: center; min-height: 100vh; 
             color: var(--deep-brown);
         }
 
-        /* Screen Management */
         .screen { display: none; width: 95%; max-width: 900px; padding: 20px; animation: fadeIn 0.4s ease; }
         .active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
@@ -40,7 +35,6 @@
             margin-top: 20px; backdrop-filter: blur(5px);
         }
 
-        /* Buttons & Neon Effects */
         .btn { 
             padding: 15px 25px; border-radius: 20px; border: 2px solid transparent; font-size: 1.2rem; 
             font-weight: 600; cursor: pointer; background: var(--primary); color: white; 
@@ -49,24 +43,17 @@
 
         .btn:hover, .seat:hover {
             box-shadow: 0 0 15px 5px var(--neon-glow), 0 6px 0 #5a7a48;
-            transform: scale(1.02);
-            border-color: #fff;
+            transform: scale(1.02); border-color: #fff;
         }
 
-        .btn:active, .seat:active {
-            transform: translateY(4px);
-            box-shadow: 0 0 20px 5px var(--sun-orange);
-        }
-
+        .btn:active, .seat:active { transform: translateY(4px); box-shadow: 0 0 20px 5px var(--sun-orange); }
         .btn-pink { background: var(--secondary); box-shadow: 0 6px 0 #b88661; }
 
-        /* Configuration Layout */
         .setup-box { border: 2px dashed #ccc; border-radius: 20px; padding: 20px; margin-bottom: 20px; background: rgba(255,255,255,0.4); }
         .input-box { padding: 10px; border-radius: 10px; border: 1px solid #ccc; width: 100%; font-family: inherit; box-sizing: border-box; }
         .class-card { background: white; border: 1px solid #ddd; border-radius: 15px; padding: 15px; margin-bottom: 10px; }
         .material-row { display: grid; grid-template-columns: 1fr 1fr 100px; gap: 15px; align-items: center; margin-bottom: 15px; }
 
-        /* Grid & Recorder */
         .seat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; margin-top: 20px; }
         .seat { 
             background: white; border-radius: 15px; padding: 20px 10px; text-align: center; 
@@ -83,7 +70,7 @@
     <audio id="snd-click" src="click.mp3" preload="auto"></audio>
 
     <div id="view-start" class="screen active">
-        <h1 style="text-align:center; color:white; text-shadow: 3px 3px var(--deep-brown);">English Recording Studio</h1>
+        <h1 style="text-align:center; color:white; text-shadow: 3px 3px var(--deep-brown);">Studio Launcher</h1>
         <div class="card">
             <button class="btn" onclick="navToConfig('Elementary')">Elementary School</button>
             <button class="btn btn-pink" style="margin-top:15px;" onclick="navToConfig('Junior High')">Junior High School</button>
@@ -145,7 +132,8 @@
     </div>
 
 <script>
-    const BRIDGE_URL = "https://script.google.com/macros/s/AKfycby2m6oTlF4ASJlDoFXMNZ0Dl29V7Q3mZdpzTCLuZGVG6uvdPd_ewM4-BafSMFtj6Cc/exec";
+    // Your updated Script URL
+    const BRIDGE_URL = "https://script.google.com/macros/s/AKfycbxA2t_Wu09yy6FGf4nHNsBi2jPYQ9qerdcgo7BszqAj4ne0I3NbEcTPVmwsHsC6ZGw/exec";
     const hSnd = document.getElementById('snd-hover');
     const cSnd = document.getElementById('snd-click');
     
@@ -153,19 +141,14 @@
     let isRec = false, mediaRec, chunks = [], recognition, latestScore = 6;
     let activeStudentName = "", currentPromptIndex = 0, currentStudentPrompts = [];
 
-    // Sound Logic
     function playClick() { cSnd.currentTime = 0; cSnd.play().catch(()=>{}); }
     function playHover() { hSnd.currentTime = 0; hSnd.play().catch(()=>{}); }
 
     function attachListeners() {
         const targets = document.querySelectorAll('.btn, .seat, .class-card');
-        targets.forEach(t => {
-            t.onmouseenter = playHover;
-            t.onmousedown = playClick;
-        });
+        targets.forEach(t => { t.onmouseenter = playHover; t.onmousedown = playClick; });
     }
 
-    // Run sound check whenever DOM changes
     const observer = new MutationObserver(attachListeners);
     observer.observe(document.body, { childList: true, subtree: true });
 
@@ -291,18 +274,30 @@
         const reader = new FileReader();
         reader.readAsDataURL(new Blob(chunks, { type: 'audio/webm' }));
         reader.onloadend = async () => {
-            const params = new URLSearchParams({
-                audio: reader.result.split(',')[1],
+            const base64Data = reader.result.split(',')[1];
+            const payload = {
+                audio: base64Data,
                 filename: `${window.activeS}_${activeStudentName || 'S'}_${latestScore}.webm`,
-                folderUrl: document.getElementById('drive-url').value,
-                className: document.getElementById('class-nav').value
-            });
-            await fetch(BRIDGE_URL, { method: 'POST', body: params, mode: 'no-cors' });
-            if (currentPromptIndex < currentStudentPrompts.length - 1) {
-                currentPromptIndex++; updateUI();
-            } else {
-                document.getElementById('seat-'+window.activeS).classList.add('done');
-                showView('view-grid');
+                folderUrl: document.getElementById('drive-url').value
+            };
+
+            try {
+                // Using text/plain and no-cors to bypass security blocks
+                await fetch(BRIDGE_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (currentPromptIndex < currentStudentPrompts.length - 1) {
+                    currentPromptIndex++; updateUI();
+                } else {
+                    document.getElementById('seat-'+window.activeS).classList.add('done');
+                    showView('view-grid');
+                }
+            } catch (err) {
+                alert("Upload failed. Ensure folder is shared as 'Editor'.");
             }
         };
     }
