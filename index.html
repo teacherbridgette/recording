@@ -3,87 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Wynn's Studio Pro</title>
+    <title>Teacher Wynn's Recording Studio</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root { 
-            --p: #6c5ce7; --bg: #f0f3f9; --s: #00b894; --e: #ff7675; --glass: rgba(255, 255, 255, 0.96);
+            --bg-green: #7a9e60; 
+            --sun-orange: #e2a87a; 
+            --deep-brown: #665040;
+            --paper-white: rgba(252, 251, 242, 0.94); 
+            --primary: var(--bg-green);
+            --secondary: var(--sun-orange); 
+            --error: #ff7675;
         }
         
         body { 
             font-family: 'Fredoka', "Comic Sans MS", cursive; 
-            background: #7a9e60 url('bg.png') no-repeat center center fixed; 
-            background-size: cover; margin: 0; overflow: hidden;
+            background: var(--bg-green) url('bg.png') no-repeat center center fixed; 
+            background-size: cover; margin: 0; overflow: hidden; color: var(--deep-brown);
         }
 
-        .app { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.15); }
+        .app { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.1); }
 
+        /* Paper-style Container */
         .view { 
-            width: 96%; height: 94%; background: var(--glass); 
-            backdrop-filter: blur(20px); border-radius: 40px; 
+            width: 94%; height: 92%; background: var(--paper-white); 
+            backdrop-filter: blur(10px); border-radius: 30px; 
             display: none; flex-direction: column; position: relative;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            border: 8px solid white;
+            animation: fadeIn 0.5s ease-out;
         }
 
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
-        #lobby { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 120px 50px 50px; box-sizing: border-box; }
+        /* Title Page / Grade Selection */
+        #lobby { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; padding: 140px 60px 60px; box-sizing: border-box; }
+        .title-header { 
+            position: absolute; top: 40px; width: 100%; text-align: center; 
+            font-size: 3.5rem; color: var(--deep-brown); font-variant: small-caps; 
+            text-shadow: 2px 2px 0px white; margin: 0;
+        }
 
         .grade-pill { 
-            background: white; border-radius: 35px; cursor: pointer; transition: 0.3s;
-            display: flex; align-items: center; justify-content: center; border: 5px solid transparent;
-            box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+            background: white; border-radius: 25px; cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; 
+            border: 4px solid var(--sun-orange);
+            box-shadow: 0 8px 0px var(--sun-orange);
         }
-        .grade-pill:hover { transform: translateY(-8px); border-color: var(--p); box-shadow: 0 20px 40px rgba(108, 92, 231, 0.2); }
-        .grade-pill h2 { font-size: 2.5rem; color: var(--p); font-variant: small-caps; margin: 0; }
+        .grade-pill:hover { transform: translateY(-5px); box-shadow: 0 12px 0px var(--sun-orange); }
+        .grade-pill h2 { font-size: 2.5rem; margin: 0; color: var(--deep-brown); }
 
-        .navbar { padding: 25px 50px; display: flex; justify-content: space-between; align-items: center; }
-        .grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; padding: 0 50px 50px; overflow-y: auto; }
+        /* Navigation Bar */
+        .navbar { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #d1ccc0; }
+        .grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 30px 40px; overflow-y: auto; }
 
+        /* Seat Buttons */
         .seat { 
-            background: white; border-radius: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            min-height: 120px; cursor: pointer; transition: 0.2s; border: 3px solid #f0f0f0; text-align: center;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.04);
+            background: white; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            min-height: 110px; cursor: pointer; transition: 0.2s; border: 3px solid #e0dcd0;
         }
-        .seat.done { background: var(--s); color: white; border-color: transparent; transform: scale(0.95); }
-        .seat span.s-num { font-size: 2.2rem; font-weight: 700; display: block; }
-        .seat small { font-size: 1rem; font-weight: 600; }
+        .seat.done { background: var(--bg-green); color: white; border-color: transparent; }
+        .seat span.s-num { font-size: 2.2rem; font-weight: 700; }
 
-        .input-f { background: #f8faff; padding: 15px; border-radius: 18px; border: 2px solid #edf2f7; font-family: inherit; width: 100%; box-sizing: border-box; outline: none; }
-        .btn { width: 100%; padding: 20px; border-radius: 30px; border: none; font-size: 1.8rem; font-weight: 700; color: white; cursor: pointer; font-variant: small-caps; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
+        /* Forms & Modals */
+        .input-f { background: white; padding: 12px; border-radius: 12px; border: 2px solid var(--sun-orange); font-family: inherit; width: 100%; box-sizing: border-box; color: var(--deep-brown); }
+        .btn { width: 100%; padding: 18px; border-radius: 25px; border: none; font-size: 1.6rem; font-weight: 700; color: white; cursor: pointer; font-variant: small-caps; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
 
-        #configModal, #modal { display: none; position: fixed; inset: 0; background: rgba(45, 52, 54, 0.4); backdrop-filter: blur(12px); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-c { background: white; width: 90%; max-width: 750px; padding: 50px; border-radius: 50px; text-align: center; max-height: 90vh; overflow-y: auto; box-shadow: 0 40px 100px rgba(0,0,0,0.3); }
+        #configModal, #modal { display: none; position: fixed; inset: 0; background: rgba(102, 80, 64, 0.4); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-c { background: var(--paper-white); width: 90%; max-width: 700px; padding: 40px; border-radius: 40px; text-align: center; border: 6px solid white; box-shadow: 0 30px 60px rgba(0,0,0,0.3); }
         
-        #wordBox { font-size: clamp(2rem, 12vw, 5rem); color: var(--p); margin: 30px 0; font-weight: 700; font-variant: small-caps; min-height: 180px; display: flex; align-items: center; justify-content: center; line-height: 1.1; }
+        #wordBox { font-size: 4rem; color: var(--deep-brown); margin: 20px 0; font-weight: 700; font-variant: small-caps; min-height: 160px; display: flex; align-items: center; justify-content: center; border: 4px dashed var(--sun-orange); border-radius: 20px; padding: 20px; background: rgba(255,255,255,0.5); }
         
-        .setup-row { display: grid; grid-template-columns: 1fr 1fr 100px; gap: 15px; align-items: center; margin-bottom: 20px; text-align: left; }
+        .setup-row { display: grid; grid-template-columns: 100px 1fr 80px; gap: 10px; align-items: center; margin-bottom: 15px; text-align: left; font-weight: 600; }
     </style>
 </head>
 <body>
 
 <div class="app">
     <div id="lobby" class="view" style="display: grid;">
-        <h1 style="position:absolute; top:35px; left:50%; transform:translateX(-50%); color:var(--p); font-variant: small-caps; font-size: 3rem; margin: 0; white-space: nowrap;">Teacher Wynn's Recording Studio</h1>
-        <div class="grade-pill" onclick="openSetup(1)"><h2>Grade 1</h2></div>
-        <div class="grade-pill" onclick="openSetup(2)"><h2>Grade 2</h2></div>
-        <div class="grade-pill" onclick="openSetup(3)"><h2>Grade 3</h2></div>
-        <div class="grade-pill" onclick="openSetup(4)"><h2>Grade 4</h2></div>
-        <div class="grade-pill" onclick="openSetup(5)"><h2>Grade 5</h2></div>
-        <div class="grade-pill" onclick="openSetup(6)"><h2>Grade 6</h2></div>
+        <h1 class="title-header">Recording Studio</h1>
+        <div class="grade-pill" onclick="prepConfig(1)"><h2>G1</h2></div>
+        <div class="grade-pill" onclick="prepConfig(2)"><h2>G2</h2></div>
+        <div class="grade-pill" onclick="prepConfig(3)"><h2>G3</h2></div>
+        <div class="grade-pill" onclick="prepConfig(4)"><h2>G4</h2></div>
+        <div class="grade-pill" onclick="prepConfig(5)"><h2>G5</h2></div>
+        <div class="grade-pill" onclick="prepConfig(6)"><h2>G6</h2></div>
     </div>
 
     <div id="main" class="view">
         <div class="navbar">
-            <button onclick="location.reload()" style="border:none; background:none; cursor:pointer; color:var(--p);"><i data-lucide="arrow-left-circle" size="48"></i></button>
-            <div style="display:flex; gap:20px; align-items:center;">
-                <span id="gLabel" style="font-size:2rem; font-weight:700; color:var(--p);"></span>
-                <select id="classSel" class="input-f" style="width:auto; font-size:1.2rem;" onchange="renderGrid()"></select>
+            <button onclick="location.reload()" style="border:none; background:none; cursor:pointer; color:var(--deep-brown);"><i data-lucide="home" size="32"></i></button>
+            <div style="display:flex; gap:15px; align-items:center;">
+                <span id="gLabel" style="font-size:1.8rem; font-weight:700; font-variant: small-caps;"></span>
+                <select id="classSel" class="input-f" style="width:auto; padding: 5px 15px;" onchange="renderGrid()"></select>
             </div>
-            <i data-lucide="settings" style="cursor:pointer; color:var(--p);" size="40" onclick="document.getElementById('configModal').style.display='flex'"></i>
+            <i data-lucide="settings" style="cursor:pointer;" size="32" onclick="document.getElementById('configModal').style.display='flex'"></i>
         </div>
         <div class="grid" id="seatGrid"></div>
     </div>
@@ -91,90 +106,86 @@
 
 <div id="configModal">
     <div class="modal-c">
-        <h2 style="color:var(--p); font-variant: small-caps; font-size: 2.5rem; margin-top: 0;">Grade <span id="confG"></span> Setup</h2>
+        <h2 style="margin-top:0; font-variant: small-caps;">Studio Configuration</h2>
         
-        <div style="text-align:left; margin-bottom:25px;">
-            <label><b>1. Google Drive Folder Link</b></label>
-            <input type="text" id="driveLink" class="input-f" placeholder="Paste full URL here...">
+        <div style="text-align:left; margin-bottom:20px;">
+            <label><b>Google Drive Folder Link</b></label>
+            <input type="text" id="driveLink" class="input-f" placeholder="https://drive.google.com/...">
         </div>
 
-        <div style="text-align:left; margin-bottom:25px;">
-            <label><b>2. Student Name Lists (.txt)</b></label>
+        <div style="text-align:left; margin-bottom:20px;">
+            <label><b>Student Name Files (.txt)</b></label>
             <input type="file" id="nameFiles" class="input-f" multiple accept=".txt">
-            <small style="color:#636e72;">Upload files like "501.txt", "502.txt"...</small>
         </div>
 
-        <div style="border-top: 2px solid #f1f2f6; padding-top: 20px;">
-            <p style="text-align:left; font-weight: 700;">3. Material Capacity</p>
+        <div style="background: rgba(226, 168, 122, 0.1); padding: 15px; border-radius: 20px;">
+            <p style="margin-top:0;"><b>Recording Materials (Auto-Randomized)</b></p>
             <div class="setup-row">
-                <span>Words:</span>
+                <span>Words</span>
                 <input type="file" id="file-words" class="input-f">
                 <input type="number" id="qty-words" class="input-f" placeholder="Qty">
             </div>
             <div class="setup-row">
-                <span>Sentences:</span>
+                <span>Sentences</span>
                 <input type="file" id="file-sentences" class="input-f">
                 <input type="number" id="qty-sentences" class="input-f" placeholder="Qty">
             </div>
         </div>
 
-        <button class="btn" style="background:var(--s); margin-top:30px;" onclick="saveAndLaunch()">Confirm & Start Studio ✨</button>
+        <button class="btn" style="background:var(--bg-green); margin-top:20px; box-shadow: 0 6px 0px #5e7a4a;" onclick="launchStudio()">Launch Studio ✨</button>
     </div>
 </div>
 
 <div id="modal">
     <div class="modal-c">
-        <h2 id="sLabel" style="opacity:0.3; font-variant: small-caps; margin: 0;">Student</h2>
-        <div id="wordCounter" style="color:var(--p); font-weight:700; font-size: 1.2rem; margin: 10px 0;">Item 1 of 1</div>
+        <h2 id="sLabel" style="opacity:0.6; font-variant: small-caps; margin:0;">Student</h2>
+        <div id="wordCounter" style="font-weight:600; margin:10px 0;">Item 1 of 1</div>
         <div id="wordBox">Ready?</div>
         
-        <button id="startBtn" class="btn" style="background:var(--s);" onclick="startRecording()">Start Recording</button>
+        <button id="startBtn" class="btn" style="background:var(--bg-green); box-shadow: 0 6px 0px #5e7a4a;" onclick="startRec()">Start Recording</button>
         
         <div id="recControls" style="display:none;">
-            <button id="nextBtn" class="btn" style="background:var(--p); margin-bottom:15px;" onclick="nextItem()">Next Item</button>
-            <button id="stopBtn" class="btn" style="background:var(--e);" onclick="stopRecording()">Stop & Save</button>
+            <button id="nextBtn" class="btn" style="background:var(--sun-orange); margin-bottom:12px; box-shadow: 0 6px 0px #b58662;" onclick="nextItem()">Next Word</button>
+            <button id="stopBtn" class="btn" style="background:var(--error); box-shadow: 0 6px 0px #c05857;" onclick="stopRec()">Stop & Save</button>
         </div>
-        <div id="status" style="margin-top:20px; font-weight:700; color:var(--p); font-size: 1.4rem;">...</div>
-        <button onclick="closeModal()" id="cancelBtn" style="margin-top:30px; border:none; background:none; color:#b2bec3; cursor:pointer; font-size: 1.1rem;">Cancel</button>
+        <div id="status" style="margin-top:20px; font-weight:700; color:var(--bg-green);">...</div>
+        <button onclick="closeModal()" id="cancelBtn" style="margin-top:20px; border:none; background:none; color:var(--deep-brown); cursor:pointer; opacity:0.5;">Cancel</button>
     </div>
 </div>
 
 <script>
-    // YOUR DEPLOYED APPS SCRIPT URL
+    // YOUR FINAL APPS SCRIPT URL
     const BRIDGE_URL = 'https://script.google.com/macros/s/AKfycbx-xIMK6qA_Md4-C4FW2VqbCVre9_xhXkMFjDKRCRFg6gKlyvV8xaJlAwmfxkoYOwA98Q/exec';
     
-    let state = { g: 0, names: {}, pool: [], idx: 0, recorder: null, chunks: [], student: "", seat: 0 };
+    let studio = { g: 0, names: {}, pool: [], idx: 0, recorder: null, chunks: [], student: "", seat: 0 };
 
     lucide.createIcons();
 
-    function openSetup(g) {
-        state.g = g;
+    function prepConfig(g) {
+        studio.g = g;
         document.getElementById('confG').innerText = g;
         document.getElementById('configModal').style.display = 'flex';
         if(localStorage.getItem('wynn_drive')) document.getElementById('driveLink').value = localStorage.getItem('wynn_drive');
     }
 
-    async function saveAndLaunch() {
+    async function launchStudio() {
         const nFiles = document.getElementById('nameFiles').files;
-        if(nFiles.length === 0) { alert("Please upload at least one class name file (.txt)"); return; }
+        if(nFiles.length === 0) { alert("Please upload class .txt files"); return; }
 
-        // Process Names
         for (let f of nFiles) {
             const cName = f.name.replace('.txt', '');
             const txt = await f.text();
-            state.names[cName] = txt.split('\n').filter(n => n.trim());
+            studio.names[cName] = txt.split('\n').filter(n => n.trim());
         }
 
-        // Process Materials (Randomize as requested)
-        state.pool = [];
-        await loadMaterials('file-words', 'qty-words');
-        await loadMaterials('file-sentences', 'qty-sentences');
-        if(state.pool.length === 0) state.pool = ["Ready to Record!"];
+        studio.pool = [];
+        await loadLines('file-words', 'qty-words');
+        await loadLines('file-sentences', 'qty-sentences');
+        if(studio.pool.length === 0) studio.pool = ["Practice makes perfect!"];
 
-        // Setup Class Select
         const sel = document.getElementById('classSel');
         sel.innerHTML = '';
-        Object.keys(state.names).sort().forEach(c => {
+        Object.keys(studio.names).sort().forEach(c => {
             sel.innerHTML += `<option value="${c}">${c}</option>`;
         });
 
@@ -182,18 +193,18 @@
         document.getElementById('lobby').style.display = 'none';
         document.getElementById('configModal').style.display = 'none';
         document.getElementById('main').style.display = 'flex';
-        document.getElementById('gLabel').innerText = "Grade " + state.g;
+        document.getElementById('gLabel').innerText = "Grade " + studio.g;
         renderGrid();
     }
 
-    async function loadMaterials(fid, qid) {
+    async function loadLines(fid, qid) {
         const f = document.getElementById(fid).files[0];
         const q = parseInt(document.getElementById(qid).value) || 0;
         if (f) {
             let lines = (await f.text()).split('\n').filter(l => l.trim());
-            lines = lines.sort(() => Math.random() - 0.5); // Randomization logic
+            lines = lines.sort(() => Math.random() - 0.5); // Randomization
             if (q > 0) lines = lines.slice(0, q);
-            state.pool.push(...lines);
+            studio.pool.push(...lines);
         }
     }
 
@@ -201,7 +212,7 @@
         const c = document.getElementById('classSel').value;
         const grid = document.getElementById('seatGrid');
         grid.innerHTML = '';
-        const students = state.names[c] || [];
+        const students = studio.names[c] || [];
         students.forEach((name, i) => {
             const s = document.createElement('div');
             s.className = 'seat';
@@ -213,69 +224,59 @@
     }
 
     function openBooth(num, name) {
-        state.student = name;
-        state.seat = num;
-        state.idx = 0;
+        studio.student = name; studio.seat = num; studio.idx = 0;
         document.getElementById('sLabel').innerText = `${num}. ${name}`;
         updateBooth();
         document.getElementById('modal').style.display = 'flex';
         document.getElementById('startBtn').style.display = 'block';
         document.getElementById('recControls').style.display = 'none';
-        document.getElementById('status').innerText = "Ready to record";
+        document.getElementById('status').innerText = "Ready";
     }
 
     function updateBooth() {
-        document.getElementById('wordBox').innerText = state.pool[state.idx];
-        document.getElementById('wordCounter').innerText = `Item ${state.idx + 1} of ${state.pool.length}`;
-        document.getElementById('nextBtn').style.display = (state.idx >= state.pool.length - 1) ? 'none' : 'block';
+        document.getElementById('wordBox').innerText = studio.pool[studio.idx];
+        document.getElementById('wordCounter').innerText = `Item ${studio.idx + 1} of ${studio.pool.length}`;
+        document.getElementById('nextBtn').style.display = (studio.idx >= studio.pool.length - 1) ? 'none' : 'block';
     }
 
-    function nextItem() { state.idx++; updateBooth(); }
+    function nextItem() { studio.idx++; updateBooth(); }
 
-    async function startRecording() {
+    async function startRec() {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        state.recorder = new MediaRecorder(stream);
-        state.chunks = [];
-        state.recorder.ondataavailable = e => state.chunks.push(e.data);
-        state.recorder.onstop = sendToDrive;
-        state.recorder.start();
-        
+        studio.recorder = new MediaRecorder(stream);
+        studio.chunks = [];
+        studio.recorder.ondataavailable = e => studio.chunks.push(e.data);
+        studio.recorder.onstop = upload;
+        studio.recorder.start();
         document.getElementById('startBtn').style.display = 'none';
-        document.getElementById('cancelBtn').style.display = 'none';
         document.getElementById('recControls').style.display = 'block';
         document.getElementById('status').innerText = "🔴 Recording...";
     }
 
-    function stopRecording() {
-        state.recorder.stop();
+    function stopRec() {
+        studio.recorder.stop();
         document.getElementById('status').innerText = "⌛ Sending to Drive...";
     }
 
-    function sendToDrive() {
+    function upload() {
         const reader = new FileReader();
-        reader.readAsDataURL(new Blob(state.chunks, { type: 'audio/webm' }));
+        reader.readAsDataURL(new Blob(studio.chunks, { type: 'audio/webm' }));
         reader.onloadend = () => {
-            const base64Data = reader.result.split(',')[1];
-            const className = document.getElementById('classSel').value;
             const payload = {
-                audio: base64Data,
-                filename: `${className}_Seat${state.seat}_${state.student}.webm`,
-                className: className,
+                audio: reader.result.split(',')[1],
+                filename: `${document.getElementById('classSel').value}_Seat${studio.seat}_${studio.student}.webm`,
+                className: document.getElementById('classSel').value,
                 folderUrl: document.getElementById('driveLink').value
             };
 
             fetch(BRIDGE_URL, { 
-                method: 'POST', 
-                mode: 'no-cors',
+                method: 'POST', mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify(payload) 
             }).then(() => {
-                document.getElementById('status').innerText = "✅ Saved Successfully!";
-                document.getElementById(`seat-${state.seat}`).classList.add('done');
+                document.getElementById('status').innerText = "✅ Saved!";
+                document.getElementById(`seat-${studio.seat}`).classList.add('done');
                 setTimeout(closeModal, 1500);
-            }).catch(err => {
-                document.getElementById('status').innerText = "❌ Upload Error";
-                console.error(err);
             });
         };
     }
