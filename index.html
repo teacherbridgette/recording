@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Teacher Wynn's Studio Pro</title>
+    <title>Wynn's Studio Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root { --p: #6c5ce7; --s: #00b894; --e: #ff7675; --glass: rgba(255, 255, 255, 0.88); }
+        :root { --p: #6c5ce7; --s: #00b894; --e: #ff7675; --teal: #00bfa5; --glass: rgba(255, 255, 255, 0.9); --bg-input: #f0f3f7; }
         
         body { 
-            font-family: 'Fredoka', 'Comic Sans MS', sans-serif; 
+            font-family: 'Fredoka', sans-serif; 
             background: url('bg.png') no-repeat center center fixed; 
             background-size: cover; margin: 0; overflow: hidden; 
         }
@@ -19,33 +19,44 @@
         .view { 
             width: 96vw; height: 92vh; background: var(--glass); backdrop-filter: blur(15px); 
             border-radius: 40px; display: none; margin: 4vh auto; position: relative;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2); flex-direction: column;
-            border: 4px solid white;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15); flex-direction: column;
         }
 
-        .school-box { 
-            background: white; padding: 30px; border-radius: 25px; width: 260px; 
-            cursor: pointer; transition: 0.3s; text-align: center; border: 4px solid transparent; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        /* Classroom Setup Modal Styling */
+        #configModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-c { background: white; width: 90%; max-width: 800px; padding: 40px; border-radius: 30px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
+        
+        .modal-title { font-size: 2.2rem; color: var(--p); margin: 0 0 25px 0; font-weight: 700; }
+        .config-label { display: block; font-size: 1.1rem; color: #444; margin-bottom: 8px; font-weight: 500; text-align: left; }
+        
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-f { background: var(--bg-input); padding: 15px 20px; border-radius: 18px; border: 2px solid #e2e8f0; width: 100%; box-sizing: border-box; font-family: inherit; font-size: 1rem; color: #333; transition: 0.2s; }
+        .input-f:focus { border-color: var(--p); outline: none; background: white; }
+
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 20px; }
+        .col-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        
+        .material-box { text-align: left; }
+        .material-box b { font-size: 1.2rem; display: block; margin-bottom: 10px; color: #2d3436; }
+        
+        .file-input-wrapper { background: var(--bg-input); border: 2px solid #e2e8f0; border-radius: 15px; padding: 10px; display: flex; align-items: center; margin-bottom: 10px; }
+        .file-input-wrapper input[type="file"] { font-size: 0.9rem; width: 100%; }
+
+        .confirm-btn { 
+            background: var(--teal); color: white; width: 100%; padding: 20px; 
+            border-radius: 50px; border: none; font-size: 1.8rem; font-weight: 700; 
+            cursor: pointer; margin-top: 20px; transition: 0.3s; 
         }
+        .confirm-btn:hover { transform: scale(1.02); filter: brightness(1.05); }
+
+        /* Main View UI */
+        .school-box { background: white; padding: 30px; border-radius: 25px; width: 260px; cursor: pointer; transition: 0.3s; text-align: center; border: 4px solid transparent; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
         .school-box:hover { transform: translateY(-10px); border-color: var(--p); }
-
         .grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 20px 40px; overflow-y: auto; }
-        
-        .seat { 
-            background: white; border-radius: 20px; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; min-height: 110px; cursor: pointer; 
-            border: 3px solid #eee; transition: 0.2s; 
-        }
-        .seat:hover { border-color: var(--p); transform: scale(1.02); }
+        .seat { background: white; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 110px; cursor: pointer; border: 3px solid #eee; transition: 0.2s; }
         .seat.done { background: var(--s); color: white; border-color: #008a6e; }
-
-        .input-f { background: #f1f2f6; padding: 10px; border-radius: 12px; border: 2px solid #ddd; width: 100%; box-sizing: border-box; font-family: inherit; font-size: 1rem; }
         
-        #modal, #configModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-c { background: white; width: 90%; max-width: 700px; padding: 35px; border-radius: 35px; text-align: center; box-shadow: 0 30px 100px rgba(0,0,0,0.3); }
-
-        .footer { position: fixed; bottom: 15px; width: 100%; text-align: center; color: #444; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; pointer-events: none; }
+        .footer { position: fixed; bottom: 15px; width: 100%; text-align: center; color: #666; font-weight: 600; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -53,62 +64,97 @@
 <audio id="sndHover" src="hover.mp3"></audio>
 <audio id="sndClick" src="click.mp3"></audio>
 
-<div id="titlePage" class="view" style="display: flex; align-items: center; justify-content: center;">
-    <h1 style="font-size: 4rem; color: var(--p); margin-bottom: 40px; text-shadow: 3px 3px 0px white;">Wynn's Studio Pro</h1>
-    <div style="display: flex; gap: 40px;">
-        <div class="school-box" onclick="playClick(); showLobby('elem')" onmouseenter="playHover()">
-            <i data-lucide="baby" size="48" color="#6c5ce7"></i><h2>Elementary</h2>
+<div class="app">
+    <div id="titlePage" class="view" style="display: flex; align-items: center; justify-content: center;">
+        <h1 style="font-size: 4rem; color: var(--p); margin-bottom: 40px;">Wynn's Studio Pro</h1>
+        <div style="display: flex; gap: 40px;">
+            <div class="school-box" onclick="playClick(); showLobby('elem')" onmouseenter="playHover()">
+                <i data-lucide="baby" size="48" color="#6c5ce7"></i><h2>Elementary</h2>
+            </div>
+            <div class="school-box" onclick="playClick(); showLobby('junior')" onmouseenter="playHover()">
+                <i data-lucide="graduation-cap" size="48" color="#6c5ce7"></i><h2>Junior High</h2>
+            </div>
         </div>
-        <div class="school-box" onclick="playClick(); showLobby('junior')" onmouseenter="playHover()">
-            <i data-lucide="graduation-cap" size="48" color="#6c5ce7"></i><h2>Junior High</h2>
+    </div>
+
+    <div id="lobby" class="view">
+        <h1 style="text-align: center; color: var(--p); margin-top: 40px;">Select Grade</h1>
+        <div id="gradeContainer" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 40px;"></div>
+    </div>
+
+    <div id="main" class="view">
+        <div style="padding: 20px 40px; display: flex; justify-content: space-between; align-items: center;">
+            <button onclick="goBack('lobby')" style="background:none; border:none; cursor:pointer;"><i data-lucide="arrow-left-circle" size="40" color="#6c5ce7"></i></button>
+            <div style="display:flex; gap:15px; align-items:center;">
+                <span id="gLabel" style="font-size:1.5rem; font-weight:700; color:var(--p);"></span>
+                <select id="classSel" class="input-f" style="width:auto; padding: 8px 15px;"></select>
+            </div>
+            <button onclick="promptConfig(activeG)" style="background:none; border:none; cursor:pointer;"><i data-lucide="settings" size="32" color="#6c5ce7"></i></button>
         </div>
+        <div class="grid" id="seatGrid"></div>
     </div>
 </div>
 
-<div id="lobby" class="view">
-    <h1 style="text-align: center; color: var(--p); margin-top: 40px; font-variant: small-caps;">Select Grade Level</h1>
-    <div id="gradeContainer" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 40px;"></div>
-</div>
-
-<div id="main" class="view">
-    <div style="padding: 20px 40px; display: flex; justify-content: space-between; align-items: center;">
-        <button onclick="goBack('lobby')" style="background:none; border:none; cursor:pointer;"><i data-lucide="arrow-left-circle" size="40" color="#6c5ce7"></i></button>
-        <div style="display:flex; gap:15px; align-items:center;">
-            <span id="gLabel" style="font-size:1.8rem; font-weight:700; color:var(--p);"></span>
-            <select id="classSel" class="input-f" style="width:auto;"></select>
-        </div>
-        <button onclick="promptConfig(activeG)" style="background:none; border:none; cursor:pointer;"><i data-lucide="settings" size="32" color="#6c5ce7"></i></button>
-    </div>
-    <div class="grid" id="seatGrid"></div>
-</div>
-
-<div class="footer">Teacher Wynn & Teacher Grace | Public School Excellence 2026</div>
+<div class="footer">Teacher Wynn | Studio Pro 2026</div>
 
 <div id="configModal">
     <div class="modal-c">
-        <h2 style="color:var(--p); font-variant: small-caps;">Studio Configuration</h2>
-        <input type="text" id="driveLink" class="input-f" placeholder="Google Drive Folder ID or Link" style="margin-bottom:15px;">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
-            <input type="number" id="classCount" class="input-f" value="6" placeholder="Num of Classes">
-            <input type="file" id="namesFile" class="input-f" accept=".xlsx">
+        <h2 class="modal-title">Classroom Setup</h2>
+        
+        <div class="input-group">
+            <label class="config-label">Google Drive Folder Link</label>
+            <input type="text" id="driveLink" class="input-f" placeholder="Paste link here...">
         </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; text-align: left;">
-            <div><label>Words</label><input type="file" id="fWords" class="input-f"><input type="number" id="nWords" class="input-f" placeholder="Qty"></div>
-            <div><label>Sentences</label><input type="file" id="fSents" class="input-f"><input type="number" id="nSents" class="input-f" placeholder="Qty"></div>
-            <div><label>Phonics</label><input type="file" id="fPhonics" class="input-f"><input type="number" id="nPhonics" class="input-f" placeholder="Qty"></div>
+
+        <div class="row">
+            <div class="input-group">
+                <label class="config-label">Total Classes</label>
+                <input type="number" id="classCount" class="input-f" value="6">
+            </div>
+            <div class="input-group">
+                <label class="config-label">Student Roster (.xlsx)</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="namesFile" accept=".xlsx">
+                </div>
+            </div>
         </div>
-        <button class="input-f" style="background:var(--s); color:white; font-weight:700; margin-top:20px; cursor:pointer;" onclick="confirmConfig()">Start Lesson</button>
+
+        <div class="col-3">
+            <div class="material-box">
+                <b>Words</b>
+                <div class="file-input-wrapper"><input type="file" id="fWords"></div>
+                <input type="number" id="nWords" class="input-f" placeholder="Qty (e.g. 5)">
+            </div>
+            <div class="material-box">
+                <b>Sentences</b>
+                <div class="file-input-wrapper"><input type="file" id="fSents"></div>
+                <input type="number" id="nSents" class="input-f" placeholder="Qty (e.g. 2)">
+            </div>
+            <div class="material-box">
+                <b>Phonics</b>
+                <div class="file-input-wrapper"><input type="file" id="fPhonics"></div>
+                <input type="number" id="nPhonics" class="input-f" placeholder="Qty (e.g. 3)">
+            </div>
+        </div>
+
+        <div style="text-align: left; margin-bottom: 20px;">
+            <label style="font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="randomizeCheck" checked style="width: 20px; height: 20px;"> Randomize material order?
+            </label>
+        </div>
+
+        <button class="confirm-btn" onclick="confirmConfig()">Confirm & Start</button>
     </div>
 </div>
 
-<div id="modal">
+<div id="modal" style="display: none;">
     <div class="modal-c">
         <h2 id="sLabel" style="color:#888;">Student</h2>
-        <div id="wordBox" style="font-size:3.5rem; min-height:160px; display:flex; align-items:center; justify-content:center; color:var(--e); font-weight:700; font-family: 'Comic Sans MS';">Ready?</div>
-        <button id="startBtn" class="input-f" style="background:var(--s); color:white; font-weight:700; cursor:pointer;" onclick="start()">Start Recording</button>
+        <div id="wordBox" style="font-size:3.5rem; min-height:160px; display:flex; align-items:center; justify-content:center; color:var(--e); font-weight:700;">Ready?</div>
+        <button id="startBtn" class="confirm-btn" style="background:var(--s);" onclick="start()">Start Recording</button>
         <div id="recControls" style="display:none;">
-            <button class="input-f" style="background:var(--p); color:white; margin-bottom:10px;" onclick="nextWord()">Next Item</button>
-            <button class="input-f" style="background:var(--e); color:white;" onclick="stop()">Finish & Save</button>
+            <button class="input-f" style="background:var(--p); color:white; margin-bottom:10px; border:none; padding:15px; cursor:pointer;" onclick="nextWord()">Next</button>
+            <button class="input-f" style="background:var(--e); color:white; border:none; padding:15px; cursor:pointer;" onclick="stop()">Stop & Save</button>
         </div>
         <div id="status" style="margin-top:15px; font-weight:600; color:var(--p);"></div>
     </div>
@@ -116,7 +162,6 @@
 
 <script>
     const webAppURL = 'https://script.google.com/macros/s/AKfycbxrbRAld1TM7yb_isIbYm5l4ggXtyVhudXhtA3IIdkACYJOH9CUz4vLmaPWB3mAbfyi4A/exec';
-    
     let activeG, recorder, chunks = [], curSeat, curEl, stream, sessionPlaylist = [], currentWordIdx = 0;
     let namesData = {}, categoryData = { words: [], sents: [], phonics: [] };
 
@@ -139,7 +184,8 @@
 
     function goBack(id) { 
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none'); 
-        document.getElementById(id).style.display = (id === 'titlePage') ? 'flex' : 'grid'; 
+        const target = document.getElementById(id);
+        target.style.display = (id === 'titlePage') ? 'flex' : 'grid'; 
     }
 
     function promptConfig(g) { activeG = g; document.getElementById('configModal').style.display = 'flex'; }
@@ -164,7 +210,7 @@
     }
 
     function launch(g) {
-        goBack('main'); document.getElementById('gLabel').innerText = "Grade " + g;
+        goBack('main'); document.getElementById('gLabel').innerText = "G" + g;
         const sel = document.getElementById('classSel'); sel.innerHTML = '';
         for(let i=1; i<=document.getElementById('classCount').value; i++){
             let v = g + (i<10?"0"+i:i); sel.innerHTML += `<option value="${v}">${v}</option>`;
@@ -176,15 +222,17 @@
             s.innerHTML = `<span style="font-size:1.8rem; font-weight:700;">${i+1}</span><small>${name}</small>`;
             s.onclick = () => {
                 playClick(); curSeat = i+1; curEl = s; document.getElementById('sLabel').innerText = name;
+                const shuffle = document.getElementById('randomizeCheck').checked;
                 sessionPlaylist = [
-                    ...categoryData.words.sort(()=>.5-Math.random()).slice(0, document.getElementById('nWords').value || 99),
-                    ...categoryData.sents.sort(()=>.5-Math.random()).slice(0, document.getElementById('nSents').value || 99),
-                    ...categoryData.phonics.sort(()=>.5-Math.random()).slice(0, document.getElementById('nPhonics').value || 99)
+                    ...(shuffle ? categoryData.words.sort(()=>.5-Math.random()) : categoryData.words).slice(0, document.getElementById('nWords').value || 99),
+                    ...(shuffle ? categoryData.sents.sort(()=>.5-Math.random()) : categoryData.sents).slice(0, document.getElementById('nSents').value || 99),
+                    ...(shuffle ? categoryData.phonics.sort(()=>.5-Math.random()) : categoryData.phonics).slice(0, document.getElementById('nPhonics').value || 99)
                 ];
                 currentWordIdx = 0; document.getElementById('wordBox').innerText = sessionPlaylist[0] || "Ready?";
                 document.getElementById('modal').style.display = 'flex';
                 document.getElementById('startBtn').style.display = 'block';
                 document.getElementById('recControls').style.display = 'none';
+                document.getElementById('status').innerText = "";
             }; grid.appendChild(s);
         });
     }
@@ -192,22 +240,16 @@
     function nextWord() { currentWordIdx++; if(currentWordIdx < sessionPlaylist.length) document.getElementById('wordBox').innerText = sessionPlaylist[currentWordIdx]; }
 
     async function start() {
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            recorder = new MediaRecorder(stream); chunks = [];
-            recorder.ondataavailable = e => chunks.push(e.data);
-            recorder.onstop = upload; recorder.start();
-            document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('recControls').style.display = 'block';
-            document.getElementById('status').innerText = "🔴 Mic Active...";
-        } catch (e) { alert("Mic not found! Check permissions."); }
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recorder = new MediaRecorder(stream); chunks = [];
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = upload; recorder.start();
+        document.getElementById('startBtn').style.display = 'none';
+        document.getElementById('recControls').style.display = 'block';
+        document.getElementById('status').innerText = "Recording...";
     }
 
-    function stop() { 
-        recorder.stop(); 
-        stream.getTracks().forEach(t => t.stop()); 
-        document.getElementById('status').innerText = "⏳ Saving to Drive..."; 
-    }
+    function stop() { recorder.stop(); stream.getTracks().forEach(t => t.stop()); document.getElementById('status').innerText = "Saving..."; }
 
     function upload() {
         const r = new FileReader(); r.readAsDataURL(new Blob(chunks, {type:'audio/webm'}));
@@ -216,7 +258,7 @@
             const payload = { audio: r.result.split(',')[1], filename: `Seat${curSeat}_${document.getElementById('sLabel').innerText}.webm`, folderId: id, className: document.getElementById('classSel').value };
             const body = Object.keys(payload).map(k => encodeURIComponent(k) + '=' + encodeURIComponent(payload[k])).join('&');
             fetch(webAppURL, { method: 'POST', body: body, headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, mode: 'no-cors' })
-            .then(() => { curEl.classList.add('done'); document.getElementById('status').innerText = "✅ Success!"; setTimeout(()=>document.getElementById('modal').style.display='none', 800); });
+            .then(() => { curEl.classList.add('done'); document.getElementById('status').innerText = "Saved!"; setTimeout(()=>document.getElementById('modal').style.display='none', 800); });
         };
     }
 </script>
