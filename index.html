@@ -8,7 +8,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root { --p: #6c5ce7; --s: #00b894; --e: #ff7675; --teal: #00bfa5; --glass: rgba(255, 255, 255, 0.9); --bg-input: #f0f3f7; }
+        :root { --p: #6c5ce7; --s: #00b894; --e: #ff7675; --teal: #00bfa5; --glass: rgba(255, 255, 255, 0.92); --bg-input: #f0f3f7; }
         
         body { 
             font-family: 'Fredoka', sans-serif; 
@@ -18,32 +18,27 @@
 
         .view { width: 96vw; height: 92vh; background: var(--glass); backdrop-filter: blur(15px); border-radius: 40px; display: none; margin: 4vh auto; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.15); flex-direction: column; }
 
-        /* Configuration Modal */
-        #configModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-c { background: white; width: 90%; max-width: 800px; padding: 40px; border-radius: 30px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
-        .input-f { background: var(--bg-input); padding: 15px 20px; border-radius: 18px; border: 2px solid #e2e8f0; width: 100%; box-sizing: border-box; font-family: inherit; font-size: 1rem; margin-top: 5px; }
-        .confirm-btn { background: var(--teal); color: white; width: 100%; padding: 20px; border-radius: 50px; border: none; font-size: 1.8rem; font-weight: 700; cursor: pointer; margin-top: 20px; transition: 0.3s; }
-
-        /* RECORDING PART UI */
-        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); z-index: 2000; align-items: center; justify-content: center; }
-        .record-box { 
-            background: white; width: 85%; max-width: 750px; padding: 50px; border-radius: 40px; text-align: center; 
-            border: 8px solid var(--p); box-shadow: 0 30px 80px rgba(0,0,0,0.4);
-        }
+        /* Setup Modal Styling */
+        #configModal { display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-c { background: white; width: 90%; max-width: 800px; padding: 40px; border-radius: 30px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); text-align: center; }
         
-        /* Font logic for Student and Content */
         .comic-text { font-family: 'Comic Sans MS', 'Comic Sans', cursive; }
-        #sLabel { font-size: 2.5rem; color: #555; margin-bottom: 20px; font-variant: small-caps; }
+        .input-f { background: var(--bg-input); padding: 12px 15px; border-radius: 15px; border: 2px solid #e2e8f0; width: 100%; box-sizing: border-box; font-family: inherit; font-size: 1rem; margin-top: 5px; }
+        .confirm-btn { background: var(--teal); color: white; width: 100%; padding: 20px; border-radius: 50px; border: none; font-size: 1.8rem; font-weight: 700; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .confirm-btn:hover { transform: scale(1.02); }
+
+        /* Recording Part Styling */
+        #recorderUI { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; }
         #wordBox { 
-            font-size: 5rem; min-height: 250px; display: flex; align-items: center; justify-content: center; 
-            color: var(--e); font-weight: 700; line-height: 1.1; margin: 20px 0;
-            background: #fff9f9; border-radius: 30px; border: 4px dashed #ffeaa7;
+            font-size: 4.5rem; min-height: 220px; display: flex; align-items: center; justify-content: center; 
+            color: var(--e); font-weight: 700; background: #fffdfd; border-radius: 25px; border: 4px dashed #ffeaa7; margin: 25px 0;
         }
 
-        /* Grid UI */
+        /* Student Grid */
         .grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 20px 40px; overflow-y: auto; }
         .seat { background: white; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 110px; cursor: pointer; border: 3px solid #eee; transition: 0.2s; }
         .seat.done { background: var(--s); color: white; border-color: #008a6e; }
+        
         .footer { position: fixed; bottom: 15px; width: 100%; text-align: center; color: #666; font-weight: 600; pointer-events: none; }
     </style>
 </head>
@@ -52,41 +47,16 @@
 <audio id="sndHover" src="hover.mp3"></audio>
 <audio id="sndClick" src="click.mp3"></audio>
 
-<div id="titlePage" class="view" style="display: flex; align-items: center; justify-content: center;">
-    <h1 style="font-size: 4rem; color: var(--p);">Wynn's Studio Pro</h1>
-    <div style="display: flex; gap: 40px;">
-        <div onclick="showLobby('elem')" style="cursor:pointer; background:white; padding:30px; border-radius:20px; border:4px solid var(--p);">
-            <i data-lucide="baby" size="48"></i><h2>Elementary</h2>
-        </div>
-        <div onclick="showLobby('junior')" style="cursor:pointer; background:white; padding:30px; border-radius:20px; border:4px solid var(--p);">
-            <i data-lucide="graduation-cap" size="48"></i><h2>Junior High</h2>
-        </div>
-    </div>
-</div>
-
-<div id="lobby" class="view">
-    <h1 style="text-align: center; color: var(--p); margin-top: 40px;">Select Grade</h1>
-    <div id="gradeContainer" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 40px;"></div>
-</div>
-
-<div id="main" class="view">
-    <div style="padding: 20px 40px; display: flex; justify-content: space-between; align-items: center;">
-        <button onclick="goBack('lobby')" style="background:none; border:none;"><i data-lucide="arrow-left-circle" size="40" color="#6c5ce7"></i></button>
-        <span id="gLabel" style="font-size:1.8rem; font-weight:700; color:var(--p);"></span>
-        <select id="classSel" class="input-f" style="width:auto;"></select>
-    </div>
-    <div class="grid" id="seatGrid"></div>
-</div>
-
-<div class="footer">Teacher Wynn | Studio Pro 2026</div>
-
 <div id="configModal">
     <div class="modal-c">
-        <h2 style="color:var(--p); font-size:2rem;">Classroom Setup</h2>
-        <input type="text" id="driveLink" class="input-f" placeholder="Google Drive Folder Link">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin: 15px 0;">
-            <input type="number" id="classCount" class="input-f" value="6">
-            <input type="file" id="namesFile" class="input-f" accept=".xlsx">
+        <h2 style="color:var(--p); font-size:2.2rem; margin:0 0 20px 0;">Classroom Setup</h2>
+        <div style="text-align:left; margin-bottom:15px;">
+            <label>Google Drive Folder ID</label>
+            <input type="text" id="driveLink" class="input-f" placeholder="Paste Folder ID here...">
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:15px;">
+            <div style="text-align:left;"><label>Total Classes</label><input type="number" id="classCount" class="input-f" value="6"></div>
+            <div style="text-align:left;"><label>Student Roster (.xlsx)</label><input type="file" id="namesFile" class="input-f" accept=".xlsx"></div>
         </div>
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; text-align:left;">
             <div><b>Words</b><input type="file" id="fWords" class="input-f"><input type="number" id="nWords" class="input-f" placeholder="Qty"></div>
@@ -94,112 +64,102 @@
             <div><b>Phonics</b><input type="file" id="fPhonics" class="input-f"><input type="number" id="nPhonics" class="input-f" placeholder="Qty"></div>
         </div>
         <div style="text-align:left; margin-top:15px;">
-            <label style="font-size:1.2rem;"><input type="checkbox" id="randomizeCheck" checked> Randomize material order?</label>
+            <label style="cursor:pointer;"><input type="checkbox" id="randomizeCheck" checked> Randomize material order?</label>
         </div>
-        <button class="confirm-btn" onclick="confirmConfig()">Confirm & Start</button>
+        <button class="confirm-btn" onclick="confirmSetup()">Confirm & Start</button>
     </div>
 </div>
 
-<div id="modal">
-    <div class="record-box">
-        <h2 id="sLabel" class="comic-text">Student Name</h2>
+<div id="main" class="view">
+    <div style="padding: 20px 40px; display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="color:var(--p); margin:0;">Grade <span id="gLabel"></span></h1>
+        <select id="classSel" class="input-f" style="width:auto;"></select>
+        <button onclick="location.reload()" style="background:none; border:none; cursor:pointer;"><i data-lucide="refresh-cw" color="#6c5ce7"></i></button>
+    </div>
+    <div class="grid" id="seatGrid"></div>
+</div>
+
+<div id="recorderUI">
+    <div class="modal-c">
+        <h2 id="sLabel" class="comic-text" style="color:#555; font-size:2rem;">Student</h2>
         <div id="wordBox" class="comic-text">Ready?</div>
-        
         <div id="startArea">
             <button class="confirm-btn" style="background:var(--s);" onclick="startRec()">Start Recording</button>
         </div>
-
         <div id="recControls" style="display:none;">
             <div style="display:flex; gap:15px;">
                 <button class="confirm-btn" style="background:var(--p); flex:2;" onclick="nextWord()">Next Item</button>
-                <button class="confirm-btn" style="background:var(--e); flex:1;" onclick="stopRec()">Stop & Save</button>
+                <button class="confirm-btn" style="background:var(--e); flex:1;" onclick="stopRec()">Finish & Save</button>
             </div>
-            <div id="status" style="margin-top:20px; font-weight:700; color:var(--p); font-size:1.5rem;">🔴 Recording...</div>
+            <p id="status" style="color:var(--p); font-weight:700; margin-top:20px; font-size:1.2rem;"></p>
         </div>
     </div>
 </div>
 
+<div class="footer">Teacher Wynn | Studio Pro 2026</div>
+
 <script>
-    const webAppURL = 'https://script.google.com/macros/s/AKfycbxrbRAld1TM7yb_isIbYm5l4ggXtyVhudXhtA3IIdkACYJOH9CUz4vLmaPWB3mAbfyi4A/exec';
-    let activeG, recorder, chunks = [], curSeat, curEl, stream, playlist = [], currentIdx = 0;
-    let namesData = {}, materials = { words: [], sents: [], phonics: [] };
+    const webAppURL = 'https://script.google.com/macros/s/AKfycbwEBQC7zltIZDJcM4bRhvXzj-2_VO6AZA9MPz9Z5arzkp8eArhGH1kTunIS7M8xQHmGnw/exec';
+    let activeNames = [], playlist = [], currentIdx = 0, recorder, chunks = [], stream, curEl, curSeat;
+    let materials = { words: [], sents: [], phonics: [] };
 
     lucide.createIcons();
+    function playClick() { document.getElementById('sndClick').play().catch(()=>{}); }
 
-    function showLobby(type) {
-        document.getElementById('titlePage').style.display = 'none';
-        document.getElementById('lobby').style.display = 'grid';
-        const container = document.getElementById('gradeContainer'); container.innerHTML = '';
-        const grades = type === 'elem' ? [1,2,3,4,5,6] : [7,8,9];
-        grades.forEach(g => {
-            const div = document.createElement('div'); div.className = 'seat'; div.innerHTML = `<h2>Grade ${g}</h2>`;
-            div.onclick = () => { activeG = g; document.getElementById('configModal').style.display = 'flex'; };
-            container.appendChild(div);
-        });
-    }
-
-    async function parse(f) { 
+    async function parse(f) {
         if(!f) return [];
-        return new Promise(r => {
-            const reader = new FileReader();
-            reader.onload = e => {
+        return new Promise(res => {
+            const r = new FileReader();
+            r.onload = e => {
                 const b = XLSX.read(e.target.result, {type:'binary'});
-                r(XLSX.utils.sheet_to_json(b.Sheets[b.SheetNames[0]], {header:1}).flat().filter(x => x));
-            }; reader.readAsBinaryString(f);
+                res(XLSX.utils.sheet_to_json(b.Sheets[b.SheetNames[0]], {header:1}).flat().filter(x=>x));
+            }; r.readAsBinaryString(f);
         });
     }
 
-    async function confirmConfig() {
-        const nf = document.getElementById('namesFile').files[0]; if(nf) namesData[activeG] = await parse(nf);
+    async function confirmSetup() {
+        const nf = document.getElementById('namesFile').files[0];
+        activeNames = nf ? await parse(nf) : Array.from({length:30}, (_,i)=>"Student "+(i+1));
         materials.words = await parse(document.getElementById('fWords').files[0]);
         materials.sents = await parse(document.getElementById('fSents').files[0]);
         materials.phonics = await parse(document.getElementById('fPhonics').files[0]);
-        document.getElementById('configModal').style.display = 'none';
-        launch(activeG);
-    }
-
-    function launch(g) {
-        document.getElementById('lobby').style.display = 'none';
-        document.getElementById('main').style.display = 'flex';
-        document.getElementById('gLabel').innerText = "Grade " + g;
-        const grid = document.getElementById('seatGrid'); grid.innerHTML = '';
-        const students = namesData[g] || Array.from({length:30}, (_,i) => "Student " + (i+1));
-        students.forEach((name, i) => {
-            const s = document.createElement('div'); s.className = 'seat';
-            s.innerHTML = `<b>${i+1}</b><small class="comic-text">${name}</small>`;
-            s.onclick = () => openRecorder(i+1, name, s);
-            grid.appendChild(s);
-        });
-    }
-
-    function openRecorder(num, name, el) {
-        curSeat = num; curEl = el;
-        document.getElementById('sLabel').innerText = name;
-        const isRand = document.getElementById('randomizeCheck').checked;
         
-        // Combine and respect quantity
-        const pick = (arr, n) => {
-            let res = [...arr]; if(isRand) res.sort(() => .5 - Math.random());
-            return n ? res.slice(0, n) : res;
-        };
+        document.getElementById('configModal').style.display = 'none';
+        document.getElementById('main').style.display = 'flex';
+        
+        const sel = document.getElementById('classSel');
+        for(let i=1; i<=document.getElementById('classCount').value; i++) {
+            sel.innerHTML += `<option value="Class${i}">Class ${i}</option>`;
+        }
 
-        playlist = [
-            ...pick(materials.words, document.getElementById('nWords').value),
-            ...pick(materials.sents, document.getElementById('nSents').value),
-            ...pick(materials.phonics, document.getElementById('nPhonics').value)
-        ];
+        const grid = document.getElementById('seatGrid');
+        activeNames.forEach((name, i) => {
+            const div = document.createElement('div'); div.className = 'seat';
+            div.innerHTML = `<b style="font-size:1.5rem">${i+1}</b><span class="comic-text">${name}</span>`;
+            div.onclick = () => {
+                playClick(); curEl = div; curSeat = i+1;
+                document.getElementById('sLabel').innerText = name;
+                
+                const rand = document.getElementById('randomizeCheck').checked;
+                const pick = (arr, n) => {
+                    let items = [...arr]; if(rand) items.sort(()=>.5-Math.random());
+                    return n ? items.slice(0, n) : items;
+                };
 
-        currentIdx = 0;
-        document.getElementById('wordBox').innerText = playlist[0] || "Ready?";
-        document.getElementById('modal').style.display = 'flex';
-        document.getElementById('startArea').style.display = 'block';
-        document.getElementById('recControls').style.display = 'none';
-    }
+                playlist = [
+                    ...pick(materials.words, document.getElementById('nWords').value),
+                    ...pick(materials.sents, document.getElementById('nSents').value),
+                    ...pick(materials.phonics, document.getElementById('nPhonics').value)
+                ];
 
-    function nextWord() {
-        currentIdx++;
-        if(currentIdx < playlist.length) document.getElementById('wordBox').innerText = playlist[currentIdx];
-        else document.getElementById('wordBox').innerText = "All Finished!";
+                currentIdx = 0;
+                document.getElementById('wordBox').innerText = playlist[0] || "No items!";
+                document.getElementById('recorderUI').style.display = 'flex';
+                document.getElementById('startArea').style.display = 'block';
+                document.getElementById('recControls').style.display = 'none';
+            };
+            grid.appendChild(div);
+        });
     }
 
     async function startRec() {
@@ -209,27 +169,34 @@
         recorder.onstop = upload; recorder.start();
         document.getElementById('startArea').style.display = 'none';
         document.getElementById('recControls').style.display = 'block';
+        document.getElementById('status').innerText = "🔴 Recording Active...";
     }
 
-    function stopRec() { 
-        recorder.stop(); stream.getTracks().forEach(t => t.stop()); 
-        document.getElementById('status').innerText = "⏳ Saving...";
+    function nextWord() {
+        currentIdx++;
+        document.getElementById('wordBox').innerText = playlist[currentIdx] || "All Finished!";
+    }
+
+    function stopRec() {
+        recorder.stop();
+        stream.getTracks().forEach(t => t.stop());
+        document.getElementById('status').innerText = "⏳ Saving to Drive...";
     }
 
     function upload() {
-        const reader = new FileReader(); reader.readAsDataURL(new Blob(chunks, {type:'audio/webm'}));
-        reader.onloadend = () => {
-            const folder = (document.getElementById('driveLink').value.match(/[-\w]{25,}/) || [""])[0];
-            const payload = `audio=${encodeURIComponent(reader.result.split(',')[1])}&filename=${encodeURIComponent('Seat'+curSeat+'_'+document.getElementById('sLabel').innerText+'.webm')}&folderId=${folder}&className=${document.getElementById('classSel').value}`;
+        const r = new FileReader(); r.readAsDataURL(new Blob(chunks, {type:'audio/webm'}));
+        r.onloadend = () => {
+            const folder = document.getElementById('driveLink').value.trim();
+            const payload = `audio=${encodeURIComponent(r.result.split(',')[1])}&filename=${encodeURIComponent('Seat'+curSeat+'_'+document.getElementById('sLabel').innerText+'.webm')}&folderId=${folder}&className=${document.getElementById('classSel').value}`;
+            
             fetch(webAppURL, { method: 'POST', body: payload, headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, mode: 'no-cors' })
-            .then(() => { 
-                curEl.classList.add('done'); 
-                document.getElementById('modal').style.display = 'none'; 
+            .then(() => {
+                curEl.classList.add('done');
+                document.getElementById('recorderUI').style.display = 'none';
+                document.getElementById('status').innerText = "";
             });
         };
     }
-
-    function goBack(id) { document.querySelectorAll('.view').forEach(v => v.style.display='none'); document.getElementById(id).style.display='flex'; }
 </script>
 </body>
 </html>
